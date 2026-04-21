@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { signInWithEmailAndPassword, signOut } from 'firebase/1';
+import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { get, ref } from 'firebase/database';
 import { auth, database } from '../../lib/firebase';
 

@@ -29,9 +29,15 @@ Required SDK Version 54
 Required node version 22
 
 Startup commands:
-- npm run start:tunnel   (tunnel-only, interactive)
-- npm run start:auto     (try tunnel, fallback to LAN)
-- npm run start:lan      (LAN only)
+- npx expo start         (default Expo start)
+- npm run start          (same as default)
+
+If Expo Go cannot connect:
+- Keep `npx expo start` running in one terminal.
+- Scan the fresh QR from that same terminal (avoid old cached links).
+- Ensure phone and PC are on the same Wi-Fi.
+- Turn off mobile data on the phone while testing.
+- If blocked on Windows, allow inbound TCP `8081,19000-19002` and UDP `19000-19002`.
 */
 
 /*

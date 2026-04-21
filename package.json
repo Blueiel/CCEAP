@@ -7,7 +7,6 @@
     "start:clear": "expo start --clear",
     "start:lan": "expo start --lan",
     "start:lan:clear": "expo start --lan --clear",
-    "start:tunnel": "powershell -NoLogo -NoProfile -ExecutionPolicy Bypass -File ./scripts/start-expo-tunnel.ps1 -TunnelOnly",
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
@@ -15,10 +14,7 @@
     "delete:user": "node ./scripts/deleteUser.js",
     "delete:process": "node ./scripts/processDeletionQueue.js",
     "functions:install": "npm --prefix ./functions install --legacy-peer-deps",
-    "functions:deploy": "firebase deploy --only functions",
-    "tunnel": "powershell -NoLogo -NoProfile -ExecutionPolicy Bypass -File ./scripts/start-expo-tunnel.ps1 -TunnelOnly",
-    "tunnel:clear": "powershell -NoLogo -NoProfile -ExecutionPolicy Bypass -File ./scripts/start-expo-tunnel.ps1 -TunnelOnly -Clear",
-    "start:auto": "powershell -NoLogo -NoProfile -ExecutionPolicy Bypass -File ./scripts/start-expo-tunnel.ps1"
+    "functions:deploy": "firebase deploy --only functions"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "2.2.0",
