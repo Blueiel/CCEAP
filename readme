@@ -1,0 +1,56 @@
+/*
+Create a new admin account (manual, no Node script)
+
+1) Open Firebase Console.
+2) Go to Authentication > Users.
+3) Click Add user, then enter email and password.
+4) After creating the user, copy the user UID.
+5) Go to Realtime Database > Data.
+6) Under users, create a child with Key = <UID>.
+7) Set that UID node Value Type to Object.
+8) Paste this object as the value:
+
+{
+  "uid": "PASTE_UID_HERE",
+  "email": "admin@example.com",
+  "fullName": "Admin Name",
+  "role": "admin",
+  "createdAt": 1742366400000
+}
+
+Required minimum for admin routing in this app:
+{
+  "role": "admin"
+}
+*/
+
+/*
+Required SDK Version 54  
+Required node version 22
+
+Startup commands:
+- npm run start:tunnel   (tunnel-only, interactive)
+- npm run start:auto     (try tunnel, fallback to LAN)
+- npm run start:lan      (LAN only)
+*/
+
+/*
+Automatic permanent scholar deletion (Auth + DB)
+
+1) Install Firebase CLI once:
+  npm install -g firebase-tools
+
+2) Login and verify project:
+  firebase login
+  firebase use scholr2026
+
+3) Install function dependencies:
+  npm run functions:install
+
+4) Deploy function:
+  npm run functions:deploy
+
+After deployment, deleting a scholar from Admin Settings will automatically:
+- delete Firebase Authentication account (email/password removed)
+- delete users/<uid> in Realtime Database
+*/

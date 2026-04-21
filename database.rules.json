@@ -1,0 +1,55 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "users": {
+      ".read": "auth != null && root.child('users/' + auth.uid + '/role').val() === 'admin'",
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || root.child('users/' + auth.uid + '/role').val() === 'admin')",
+        ".write": "auth != null && (auth.uid === $uid || root.child('users/' + auth.uid + '/role').val() === 'admin')"
+      }
+    },
+    "adminConfig": {
+      "schools": {
+        ".read": true,
+        ".write": "auth != null && root.child('users/' + auth.uid + '/role').val() === 'admin'"
+      },
+      "requirements": {
+        ".read": "auth != null",
+        ".write": "auth != null && root.child('users/' + auth.uid + '/role').val() === 'admin'"
+      },
+      "$other": {
+        ".read": "auth != null && root.child('users/' + auth.uid + '/role').val() === 'admin'",
+        ".write": "auth != null && root.child('users/' + auth.uid + '/role').val() === 'admin'"
+      }
+    },
+    "announcements": {
+      ".read": "auth != null",
+      ".write": "auth != null && root.child('users/' + auth.uid + '/role').val() === 'admin'"
+    },
+    "alerts": {
+      ".read": "auth != null",
+      ".write": "auth != null && root.child('users/' + auth.uid + '/role').val() === 'admin'"
+    },
+    "appointmentSchedules": {
+      ".read": "auth != null",
+      "$scheduleId": {
+        ".write": "auth != null && root.child('users/' + auth.uid + '/role').val() === 'admin'",
+        "bookedCount": {
+          ".write": "auth != null",
+          ".validate": "newData.isNumber() && newData.val() >= 0"
+        }
+      }
+    },
+    "grantClaimingSchedule": {
+      ".read": "auth != null",
+      ".write": "auth != null && root.child('users/' + auth.uid + '/role').val() === 'admin'"
+    },
+    "deletionQueue": {
+      ".read": "auth != null && root.child('users/' + auth.uid + '/role').val() === 'admin'",
+      "$uid": {
+        ".write": "auth != null && root.child('users/' + auth.uid + '/role').val() === 'admin'"
+      }
+    }
+  }
+}
