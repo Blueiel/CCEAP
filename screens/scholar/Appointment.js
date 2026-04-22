@@ -148,9 +148,9 @@ export default function Appointment({ navigation }) {
     }
   };
 
-  const handleGoStatus = () => navigation.navigate('ScholarDashboard');
-  const handleGoAnnouncement = () => navigation.navigate('ScholarAnnouncement');
-  const handleGoSettings = () => navigation.navigate('Settings');
+  const handleGoStatus = () => navigation.replace('ScholarDashboard');
+  const handleGoAnnouncement = () => navigation.replace('ScholarAnnouncement');
+  const handleGoSettings = () => navigation.replace('Settings');
 
   const performLogout = async () => {
     try {

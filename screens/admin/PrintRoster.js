@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { get, ref } from 'firebase/database';
+import { get, ref, update } from 'firebase/database';
 import { database } from '../../lib/firebase';
 
 const GOLD = '#D4AF37';
@@ -77,25 +77,53 @@ export default function PrintRoster() {
 		const loadRoster = async () => {
 			try {
 				setIsLoading(true);
-				const snapshot = await get(ref(database, 'users'));
+				const [usersSnapshot, cashiersSnapshot] = await Promise.all([
+					get(ref(database, 'users')),
+					get(ref(database, 'adminConfig/cashiers')),
+				]);
 
-				if (!snapshot.exists()) {
+				if (!usersSnapshot.exists()) {
 					setScholars([]);
 					setSchools([]);
 					return;
 				}
 
-				const users = snapshot.val();
-				const scholarRecords = Object.values(users)
-					.filter((user) => user?.role === 'scholar')
-					.map((user) => {
-						const { firstName, middleName, lastName } = parseName(user);
+				const users = usersSnapshot.val();
+				const rawCashiers = cashiersSnapshot.exists() ? cashiersSnapshot.val() : null;
+				const cashierItems = Array.isArray(rawCashiers?.items) ? rawCashiers.items : [];
+
+				const normalizedCashiers = cashierItems
+					.map((item) => {
+						const schools = Array.isArray(item?.schools)
+							? item.schools.map((entry) => String(entry || '').trim()).filter(Boolean)
+							: (item?.school || item?.counterLabel || '').trim()
+							? [String(item?.school || item?.counterLabel).trim()]
+							: [];
+
 						return {
+							fullName: (item?.fullName || '').trim(),
+							schools,
+							active: item?.active !== false,
+						};
+					})
+					.filter((item) => item.active && item.fullName)
+					.sort((a, b) => a.fullName.localeCompare(b.fullName));
+
+				const scholarRecords = Object.entries(users)
+					.filter(([, user]) => user?.role === 'scholar')
+					.map(([uid, user]) => {
+						const { firstName, middleName, lastName } = parseName(user);
+						const schoolName = (user?.school || 'Not specified').trim() || 'Not specified';
+						const matchedCashier = normalizedCashiers.find((cashier) => cashier.schools.includes(schoolName));
+						return {
+							uid,
 							firstName,
 							middleName,
 							lastName,
-							school: (user?.school || 'Not specified').trim() || 'Not specified',
+							school: schoolName,
 							yearLevel: (user?.yearLevel || 'Not specified').trim() || 'Not specified',
+							cashierAssigned: matchedCashier?.fullName || 'Not assigned',
+							existingClaimingInfo: user?.claimingInfo || {},
 						};
 					})
 					.sort((a, b) => {
@@ -111,6 +139,24 @@ export default function PrintRoster() {
 
 						return a.middleName.localeCompare(b.middleName);
 					});
+
+				const updates = {};
+				scholarRecords.forEach((item, index) => {
+					const queueNumber = index + 1;
+					const existingQueue = Number(item?.existingClaimingInfo?.queueNumber || 0);
+					const existingCashier = String(item?.existingClaimingInfo?.cashierAssigned || '').trim();
+					const nextCashier = item.cashierAssigned;
+
+					if (existingQueue !== queueNumber || existingCashier !== nextCashier) {
+						updates[`users/${item.uid}/claimingInfo/queueNumber`] = queueNumber;
+						updates[`users/${item.uid}/claimingInfo/cashierAssigned`] = nextCashier;
+						updates[`users/${item.uid}/claimingInfo/updatedAt`] = Date.now();
+					}
+				});
+
+				if (Object.keys(updates).length > 0) {
+					await update(ref(database), updates);
+				}
 
 				const uniqueSchools = Array.from(new Set(scholarRecords.map((item) => item.school))).sort();
 

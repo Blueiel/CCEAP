@@ -118,6 +118,10 @@ export default function Settings({ navigation }) {
 		]);
 	};
 
+	const handleGoStatus = () => navigation.replace('ScholarDashboard');
+	const handleGoAppointment = () => navigation.replace('Appointment');
+	const handleGoAnnouncement = () => navigation.replace('ScholarAnnouncement');
+
 	React.useEffect(() => {
 		loadProfile();
 	}, [loadProfile]);
@@ -385,6 +389,25 @@ export default function Settings({ navigation }) {
 					</TouchableOpacity>
 				</View>
 			</ScrollView>
+
+			<View style={styles.bottomNav}>
+				{[
+					['view-dashboard-outline', 'Status', false, handleGoStatus],
+					['calendar-check-outline', 'Appointment', false, handleGoAppointment],
+					['bullhorn-outline', 'Announcement', false, handleGoAnnouncement],
+					['cog-outline', 'Settings', true, null],
+				].map(([icon, label, active, onPress]) => (
+					<TouchableOpacity
+						key={label}
+						style={[styles.navItem, active && styles.navItemActive]}
+						activeOpacity={0.85}
+						onPress={onPress || undefined}
+					>
+						<MaterialCommunityIcons name={icon} size={20} color={active ? GOLD : SLATE_300} />
+						<Text style={[styles.navText, active && styles.navTextActive]}>{label}</Text>
+					</TouchableOpacity>
+				))}
+			</View>
 		</SafeAreaView>
 	);
 }
@@ -443,7 +466,7 @@ const styles = StyleSheet.create({
 	scroll: {
 		paddingHorizontal: 20,
 		paddingVertical: 16,
-		paddingBottom: 32,
+		paddingBottom: 110,
 	},
 	card: {
 		backgroundColor: CARD_BG,
@@ -499,5 +522,42 @@ const styles = StyleSheet.create({
 		fontSize: 13,
 		fontWeight: '800',
 		letterSpacing: 0.8,
+	},
+	bottomNav: {
+		position: 'absolute',
+		left: 0,
+		right: 0,
+		bottom: 0,
+		height: 84,
+		flexDirection: 'row',
+		justifyContent: 'space-around',
+		alignItems: 'center',
+		backgroundColor: CARD_BG,
+		borderTopWidth: 1,
+		borderTopColor: 'rgba(212, 175, 55, 0.22)',
+		paddingHorizontal: 12,
+		paddingTop: 8,
+		paddingBottom: 12,
+	},
+	navItem: {
+		alignItems: 'center',
+		justifyContent: 'center',
+		borderRadius: 12,
+		paddingHorizontal: 10,
+		paddingVertical: 6,
+	},
+	navItemActive: {
+		backgroundColor: 'rgba(212, 175, 55, 0.12)',
+	},
+	navText: {
+		fontSize: 10,
+		fontWeight: '700',
+		color: SLATE_300,
+		marginTop: 2,
+		textTransform: 'uppercase',
+		letterSpacing: 0.3,
+	},
+	navTextActive: {
+		color: GOLD,
 	},
 });

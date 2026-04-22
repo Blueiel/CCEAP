@@ -201,10 +201,10 @@ export default function AlertsPage() {
   const newAccounts = alerts.filter((item) => item.type === 'new_account').length;
   const announcements = alerts.filter((item) => item.type === 'announcement').length;
 
-  const handleGoHome = () => navigation.navigate('AdminDashboard');
-  const handleGoScholars = () => navigation.navigate('ScholarRegistry');
-  const handleGoReviews = () => navigation.navigate('Reviews');
-  const handleGoSettings = () => navigation.navigate('AdminSettings');
+  const handleGoHome = () => navigation.replace('AdminDashboard');
+  const handleGoScholars = () => navigation.replace('ScholarRegistry');
+  const handleGoReviews = () => navigation.replace('Reviews');
+  const handleGoSettings = () => navigation.replace('AdminSettings');
 
   if (loading) {
     return (

@@ -58,6 +58,7 @@ export default function ScholarRegistry() {
   const route = useRoute();
   const [headerFullName, setHeaderFullName] = React.useState('');
   const [schools, setSchools] = React.useState([]);
+  const [activeRequirementIds, setActiveRequirementIds] = React.useState(REQUIREMENT_IDS);
   const [searchQuery, setSearchQuery] = React.useState('');
   const [selectedSchool, setSelectedSchool] = React.useState('All');
   const [loading, setLoading] = React.useState(true);
@@ -81,14 +82,32 @@ export default function ScholarRegistry() {
   const loadScholars = React.useCallback(async () => {
     try {
       setLoading(true);
-      const snapshot = await get(ref(database, 'users'));
+      const [usersSnapshot, requirementsSnapshot] = await Promise.all([
+        get(ref(database, 'users')),
+        get(ref(database, 'adminConfig/requirements')),
+      ]);
 
-      if (!snapshot.exists()) {
+      const requirementsConfig = requirementsSnapshot.exists() ? requirementsSnapshot.val() : null;
+      let configuredRequirementIds = [];
+
+      if (Array.isArray(requirementsConfig?.items) && requirementsConfig.items.length) {
+        configuredRequirementIds = requirementsConfig.items
+          .filter((item) => item?.required !== false)
+          .map((item) => String(item?.id || '').trim())
+          .filter(Boolean);
+      } else {
+        const selectedIds = requirementsConfig?.selectedIds || {};
+        configuredRequirementIds = REQUIREMENT_IDS.filter((id) => selectedIds[id] !== false);
+      }
+
+      setActiveRequirementIds(configuredRequirementIds);
+
+      if (!usersSnapshot.exists()) {
         setSchools([]);
         return;
       }
 
-      const users = snapshot.val();
+      const users = usersSnapshot.val();
       const groupedBySchool = {};
 
       Object.keys(users).forEach((uid) => {
@@ -245,10 +264,10 @@ export default function ScholarRegistry() {
     return rows;
   }, [filteredSections]);
 
-  const handleGoHome = () => navigation.navigate('AdminDashboard');
-  const handleGoReviews = () => navigation.navigate('Reviews');
-  const handleGoAlerts = () => navigation.navigate('Alerts');
-  const handleGoSettings = () => navigation.navigate('AdminSettings');
+  const handleGoHome = () => navigation.replace('AdminDashboard');
+  const handleGoReviews = () => navigation.replace('Reviews');
+  const handleGoAlerts = () => navigation.replace('Alerts');
+  const handleGoSettings = () => navigation.replace('AdminSettings');
 
   const renderListHeader = () => (
     <>
@@ -394,7 +413,9 @@ export default function ScholarRegistry() {
               }
 
               const scholar = item.scholar;
-              const isComplete = REQUIREMENT_IDS.every((id) => !!scholar?.requirements?.[id]);
+              const isComplete =
+                activeRequirementIds.length > 0 &&
+                activeRequirementIds.every((id) => !!scholar?.requirements?.[id]);
               const displayName = formatScholarName(scholar);
 
               return (

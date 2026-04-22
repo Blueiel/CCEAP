@@ -14,12 +14,15 @@ import AdminSettings from './screens/admin/Settings';
 import PrintRoster from './screens/admin/PrintRoster';
 import ScheduleManager from './screens/admin/ScheduleManager';
 import RequirementsSetup from './screens/admin/RequirementsSetup';
+import CashierSetup from './screens/admin/CashierSetup';
 import ScholarDashboard from './screens/scholar/ScholarDashboard';
 import Appointment from './screens/scholar/Appointment';
 import ScholarAnnouncement from './screens/scholar/Announcement';
 import ScholarSettings from './screens/scholar/Settings';
 
 const Stack = createNativeStackNavigator();
+const ADMIN_MODULE_TRANSITION = { animation: 'fade' };
+const SCHOLAR_MODULE_TRANSITION = { animation: 'fade' };
 
 const OCEAN_DEEP = '#001B2E';
 
@@ -38,24 +41,73 @@ export default function App() {
           <Stack.Screen
             name="AdminDashboard"
             component={AdminDashboard}
-            options={{ gestureEnabled: false }}
+            options={{ gestureEnabled: false, ...ADMIN_MODULE_TRANSITION }}
           />
-          <Stack.Screen name="ScholarRegistry" component={ScholarRegistry} />
-          <Stack.Screen name="Reviews" component={Reviews} />
-          <Stack.Screen name="Announcement" component={Announcement} />
-          <Stack.Screen name="ScheduleManager" component={ScheduleManager} />
-          <Stack.Screen name="RequirementsSetup" component={RequirementsSetup} />
-          <Stack.Screen name="Alerts" component={Alerts} />
-          <Stack.Screen name="AdminSettings" component={AdminSettings} />
-          <Stack.Screen name="PrintRoster" component={PrintRoster} />
+          <Stack.Screen
+            name="ScholarRegistry"
+            component={ScholarRegistry}
+            options={ADMIN_MODULE_TRANSITION}
+          />
+          <Stack.Screen
+            name="Reviews"
+            component={Reviews}
+            options={ADMIN_MODULE_TRANSITION}
+          />
+          <Stack.Screen
+            name="Announcement"
+            component={Announcement}
+            options={ADMIN_MODULE_TRANSITION}
+          />
+          <Stack.Screen
+            name="ScheduleManager"
+            component={ScheduleManager}
+            options={ADMIN_MODULE_TRANSITION}
+          />
+          <Stack.Screen
+            name="RequirementsSetup"
+            component={RequirementsSetup}
+            options={ADMIN_MODULE_TRANSITION}
+          />
+          <Stack.Screen
+            name="Alerts"
+            component={Alerts}
+            options={ADMIN_MODULE_TRANSITION}
+          />
+          <Stack.Screen
+            name="AdminSettings"
+            component={AdminSettings}
+            options={ADMIN_MODULE_TRANSITION}
+          />
+          <Stack.Screen
+            name="PrintRoster"
+            component={PrintRoster}
+            options={ADMIN_MODULE_TRANSITION}
+          />
+          <Stack.Screen
+            name="CashierSetup"
+            component={CashierSetup}
+            options={ADMIN_MODULE_TRANSITION}
+          />
           <Stack.Screen
             name="ScholarDashboard"
             component={ScholarDashboard}
-            options={{ gestureEnabled: false }}
+            options={{ gestureEnabled: false, ...SCHOLAR_MODULE_TRANSITION }}
           />
-          <Stack.Screen name="Appointment" component={Appointment} />
-          <Stack.Screen name="ScholarAnnouncement" component={ScholarAnnouncement} />
-          <Stack.Screen name="Settings" component={ScholarSettings} />
+          <Stack.Screen
+            name="Appointment"
+            component={Appointment}
+            options={SCHOLAR_MODULE_TRANSITION}
+          />
+          <Stack.Screen
+            name="ScholarAnnouncement"
+            component={ScholarAnnouncement}
+            options={SCHOLAR_MODULE_TRANSITION}
+          />
+          <Stack.Screen
+            name="Settings"
+            component={ScholarSettings}
+            options={SCHOLAR_MODULE_TRANSITION}
+          />
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>

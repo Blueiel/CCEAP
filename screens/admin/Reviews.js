@@ -199,19 +199,19 @@ export default function Reviews() {
 	};
 
 	const handleGoHome = () => {
-		navigation.navigate('AdminDashboard');
+		navigation.replace('AdminDashboard');
 	};
 
 	const handleGoScholars = () => {
-		navigation.navigate('ScholarRegistry');
+		navigation.replace('ScholarRegistry');
 	};
 
 	const handleGoAlerts = () => {
-		navigation.navigate('Alerts');
+		navigation.replace('Alerts');
 	};
 
 	const handleGoSettings = () => {
-		navigation.navigate('AdminSettings');
+		navigation.replace('AdminSettings');
 	};
 
 	const handleToggleRequirement = async (uid, requirementId, currentValue) => {

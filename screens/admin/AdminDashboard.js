@@ -202,6 +202,10 @@ export default function AdminDashboard() {
     navigation.navigate('PrintRoster');
   };
 
+  const handleCashierSetupPress = () => {
+    navigation.navigate('CashierSetup');
+  };
+
   const handleAlertsPress = () => {
     navigation.navigate('Alerts');
   };
@@ -213,6 +217,11 @@ export default function AdminDashboard() {
   const handleAnnouncementPress = () => {
     navigation.navigate('Announcement');
   };
+
+  const handleGoScholars = () => navigation.replace('ScholarRegistry');
+  const handleGoReviews = () => navigation.replace('Reviews');
+  const handleGoAlerts = () => navigation.replace('Alerts');
+  const handleGoSettings = () => navigation.replace('AdminSettings');
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -283,7 +292,13 @@ export default function AdminDashboard() {
                 key={item.id}
                 style={styles.softCard}
                 activeOpacity={0.85}
-                onPress={item.id === '3' ? handlePrintRosterPress : undefined}
+                onPress={
+                  item.id === '1'
+                    ? handleCashierSetupPress
+                    : item.id === '3'
+                    ? handlePrintRosterPress
+                    : undefined
+                }
               >
                 <MaterialCommunityIcons name={item.icon} size={20} color={GOLD} />
                 <Text style={styles.softCardText}>{item.label}</Text>
@@ -358,10 +373,10 @@ export default function AdminDashboard() {
       <View style={styles.bottomNav}>
         {[
           ['home-outline', 'Home', true],
-          ['account-group-outline', 'Scholars', false, () => handleScholarRegistryPress()],
-          ['file-document-outline', 'Reviews', false, handleRequirementsPress],
-          ['bell-outline', 'Alerts', false, handleAlertsPress],
-          ['cog-outline', 'Settings', false, handleSettingsPress],
+          ['account-group-outline', 'Scholars', false, handleGoScholars],
+          ['file-document-outline', 'Reviews', false, handleGoReviews],
+          ['bell-outline', 'Alerts', false, handleGoAlerts],
+          ['cog-outline', 'Settings', false, handleGoSettings],
         ].map(([icon, label, active, onPress]) => (
           <TouchableOpacity key={label} style={styles.navItem} activeOpacity={0.8} onPress={onPress || undefined}>
             <MaterialCommunityIcons name={icon} size={20} color={active ? GOLD : SLATE_300} />

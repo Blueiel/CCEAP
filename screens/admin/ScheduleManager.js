@@ -409,11 +409,11 @@ export default function ScheduleManager() {
     );
   };
 
-  const handleGoHome = () => navigation.navigate('AdminDashboard');
-  const handleGoScholars = () => navigation.navigate('ScholarRegistry');
-  const handleGoReviews = () => navigation.navigate('Reviews');
-  const handleGoAlerts = () => navigation.navigate('Alerts');
-  const handleGoSettings = () => navigation.navigate('AdminSettings');
+  const handleGoHome = () => navigation.replace('AdminDashboard');
+  const handleGoScholars = () => navigation.replace('ScholarRegistry');
+  const handleGoReviews = () => navigation.replace('Reviews');
+  const handleGoAlerts = () => navigation.replace('Alerts');
+  const handleGoSettings = () => navigation.replace('AdminSettings');
 
   return (
     <SafeAreaView style={styles.safe}>

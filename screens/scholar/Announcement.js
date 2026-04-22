@@ -101,9 +101,9 @@ export default function ScholarAnnouncement({ navigation }) {
     ]);
   };
 
-  const handleGoStatus = () => navigation.navigate('ScholarDashboard');
-  const handleGoAppointment = () => navigation.navigate('Appointment');
-  const handleGoSettings = () => navigation.navigate('Settings');
+  const handleGoStatus = () => navigation.replace('ScholarDashboard');
+  const handleGoAppointment = () => navigation.replace('Appointment');
+  const handleGoSettings = () => navigation.replace('Settings');
 
   return (
     <SafeAreaView style={styles.safe}>

@@ -23,12 +23,13 @@ const CARD_BG = '#0B2740';
 const CARD_ALT_BG = '#12324E';
 const SLATE_100 = '#f1f5f9';
 const SLATE_300 = '#cbd5e1';
+const SUCCESS = '#4ade80';
 
-const checklist = [
+const DEFAULT_REQUIREMENTS_CHECKLIST = [
 	{
 		id: '1',
-		label: 'Duly Accomplished Application Form',
-		detail: '(1) Photocopy of Accomplished Application Form',
+		label: 'Duly Accomplished CCEAP Application Form',
+		detail: '(1) Photocopy of Accomplished CCEAP Form',
 	},
 	{
 		id: '2',
@@ -48,6 +49,13 @@ const checklist = [
 	},
 ];
 
+const normalizeRequirement = (item, index) => ({
+	id: String(item?.id || Date.now() + index),
+	label: (item?.label || '').trim() || `Requirement ${index + 1}`,
+	detail: (item?.detail || '').trim(),
+	required: item?.required !== false,
+});
+
 export default function ScholarDashboard({ navigation }) {
 	const [headerFirstName, setHeaderFirstName] = React.useState('Scholar');
 	const [scholarName, setScholarName] = React.useState('Scholar User');
@@ -55,6 +63,14 @@ export default function ScholarDashboard({ navigation }) {
 	const [scholarYearLevel, setScholarYearLevel] = React.useState('Year level not set');
 	const [grantClaimingDate, setGrantClaimingDate] = React.useState('Schedule not set yet');
 	const [grantClaimingLocation, setGrantClaimingLocation] = React.useState('Location to be announced');
+	const [claimingQueueNumber, setClaimingQueueNumber] = React.useState('Not set');
+	const [assignedCashierName, setAssignedCashierName] = React.useState('Not assigned');
+	const [requirementsChecklist, setRequirementsChecklist] = React.useState(
+		DEFAULT_REQUIREMENTS_CHECKLIST.map((item, index) => ({
+			...normalizeRequirement(item, index),
+			completed: false,
+		}))
+	);
 
 	const formatNameToLastFirstMiddle = (profile, fullName) => {
 		const lastName = profile?.lastName?.trim() || '';
@@ -90,12 +106,41 @@ export default function ScholarDashboard({ navigation }) {
 		}
 
 		try {
-			const [profileSnapshot, grantScheduleSnapshot] = await Promise.all([
+			const [profileSnapshot, grantScheduleSnapshot, requirementsSnapshot] = await Promise.all([
 				get(ref(database, `users/${user.uid}`)),
 				get(ref(database, 'grantClaimingSchedule/current')),
+				get(ref(database, 'adminConfig/requirements')),
 			]);
 			const profile = profileSnapshot.exists() ? profileSnapshot.val() : null;
 			const fullName = profile?.fullName?.trim() || user?.displayName?.trim() || 'Scholar User';
+			const requirementsConfig = requirementsSnapshot.exists() ? requirementsSnapshot.val() : null;
+			const scholarRequirements = profile?.requirements || {};
+			const scholarSchoolName = (profile?.school || '').trim();
+
+			let configuredRequirements = [];
+			if (Array.isArray(requirementsConfig?.items) && requirementsConfig.items.length) {
+				configuredRequirements = requirementsConfig.items
+					.map((item, index) => normalizeRequirement(item, index))
+					.filter((item) => item.required !== false);
+			} else {
+				const selectedIds = requirementsConfig?.selectedIds || {};
+				configuredRequirements = DEFAULT_REQUIREMENTS_CHECKLIST.map((item, index) =>
+					normalizeRequirement(
+						{
+							...item,
+							required: selectedIds[item.id] !== false,
+						},
+						index
+					)
+				).filter((item) => item.required !== false);
+			}
+
+			setRequirementsChecklist(
+				configuredRequirements.map((item) => ({
+					...item,
+					completed: !!scholarRequirements[item.id],
+				}))
+			);
 
 			const firstName =
 				profile?.firstName?.trim() ||
@@ -106,6 +151,43 @@ export default function ScholarDashboard({ navigation }) {
 			setScholarName(formatNameToLastFirstMiddle(profile, fullName));
 			setScholarSchool(profile?.school?.trim() || 'School not set');
 			setScholarYearLevel(profile?.yearLevel?.trim() || 'Year level not set');
+
+			const queueNumber = Number(profile?.claimingInfo?.queueNumber || 0);
+			setClaimingQueueNumber(queueNumber > 0 ? `#${queueNumber}` : 'Not set');
+
+			let matchedCashierName = (profile?.claimingInfo?.cashierAssigned || '').trim() || 'Not assigned';
+			try {
+				const cashiersSnapshot = await get(ref(database, 'adminConfig/cashiers'));
+				const rawCashiers = cashiersSnapshot.exists() ? cashiersSnapshot.val() : null;
+				const cashierItems = Array.isArray(rawCashiers?.items) ? rawCashiers.items : [];
+				const normalizedScholarSchool = scholarSchoolName.toLowerCase();
+
+				const matchedCashier = cashierItems
+					.map((item) => {
+						const schools = Array.isArray(item?.schools)
+							? item.schools.map((entry) => String(entry || '').trim()).filter(Boolean)
+							: (item?.school || item?.counterLabel || '').trim()
+							? [String(item?.school || item?.counterLabel).trim()]
+							: [];
+
+						return {
+							fullName: (item?.fullName || '').trim(),
+							schools,
+							active: item?.active !== false,
+						};
+					})
+					.filter((item) => item.active && item.fullName)
+					.sort((a, b) => a.fullName.localeCompare(b.fullName))
+					.find((item) =>
+						item.schools.some((school) => school.trim().toLowerCase() === normalizedScholarSchool)
+					);
+
+				matchedCashierName = matchedCashier?.fullName || matchedCashierName;
+			} catch {
+				matchedCashierName = matchedCashierName || 'Not assigned';
+			}
+
+			setAssignedCashierName(matchedCashierName);
 
 			if (grantScheduleSnapshot.exists()) {
 				const grantSchedule = grantScheduleSnapshot.val() || {};
@@ -130,6 +212,14 @@ export default function ScholarDashboard({ navigation }) {
 			setScholarYearLevel('Year level not set');
 			setGrantClaimingDate('Schedule not set yet');
 			setGrantClaimingLocation('Location to be announced');
+			setClaimingQueueNumber('Not set');
+			setAssignedCashierName('Not assigned');
+			setRequirementsChecklist(
+				DEFAULT_REQUIREMENTS_CHECKLIST.map((item, index) => ({
+					...normalizeRequirement(item, index),
+					completed: false,
+				}))
+			);
 		}
 	}, []);
 
@@ -221,7 +311,7 @@ export default function ScholarDashboard({ navigation }) {
 					<TouchableOpacity
 						style={styles.timelineCard}
 						activeOpacity={0.85}
-						onPress={() => navigation?.navigate('Appointment')}
+						onPress={() => navigation?.replace('Appointment')}
 					>
 						<MaterialCommunityIcons name="calendar-check-outline" size={22} color={GOLD} style={styles.timelineIcon} />
 						<Text style={styles.timelineStep}>Scheduling</Text>
@@ -234,40 +324,64 @@ export default function ScholarDashboard({ navigation }) {
 				</View>
 
 				<View style={styles.section}>
-					<View style={styles.whiteCard}>
-						<Text style={styles.cardTitle}>Requirements</Text>
-						{checklist.map((item) => (
-							<View key={item.id} style={styles.checkItem}>
-								<Text style={styles.checkLabel}>{item.label}</Text>
-								<Text style={styles.checkSubtext}>{item.detail}</Text>
+					<View style={styles.claimingCard}>
+						<View style={styles.claimingHeaderRow}>
+							<View style={styles.claimingTitleWrap}>
+								<View style={styles.claimingTitleIcon}>
+									<MaterialCommunityIcons name="cash-register" size={16} color={GOLD} />
+								</View>
+								<Text style={styles.claimingTitle}>My Claiming Info</Text>
 							</View>
-						))}
+						</View>
+
+						<View style={styles.claimingInfoRow}>
+							<View style={styles.claimingQueueCard}>
+								<Text style={styles.claimingLabel}>QUEUE NUMBER</Text>
+								<Text style={styles.claimingQueue}>{claimingQueueNumber}</Text>
+							</View>
+
+							<View style={styles.claimingCashierCard}>
+								<Text style={styles.claimingLabel}>CASHIER ASSIGNED</Text>
+								<View style={styles.claimingCashierPill}>
+									<Text style={styles.claimingCounter}>{assignedCashierName}</Text>
+								</View>
+							</View>
+						</View>
 					</View>
 				</View>
 
 				<View style={styles.section}>
-					<View style={styles.claimingCard}>
-						<Text style={styles.claimingTitle}>My Claiming Info</Text>
+					<View style={styles.whiteCard}>
+						<Text style={styles.cardTitle}>Requirements</Text>
+						{requirementsChecklist.length === 0 ? (
+							<Text style={styles.noRequirementsText}>No required items configured yet.</Text>
+						) : (
+							requirementsChecklist.map((item) => {
+								const isCompleted = !!item.completed;
 
-						<View style={styles.claimingTopRow}>
-							<View>
-								<Text style={styles.claimingLabel}>QUEUE NUMBER</Text>
-								<Text style={styles.claimingQueue}>#A-242</Text>
-							</View>
-
-							<View style={styles.claimingRight}>
-								<Text style={styles.claimingLabel}>CASHIER ASSIGNED</Text>
-								<Text style={styles.claimingCounter}>Counter 04</Text>
-							</View>
-						</View>
-
-						<View style={styles.claimingLocation}>
-							<MaterialCommunityIcons name="map-marker-outline" size={20} color={SLATE_100} />
-							<View style={styles.claimingLocationText}>
-								<Text style={styles.claimingLocationTitle}>City Convention Center</Text>
-								<Text style={styles.claimingLocationSub}>Main Hall - Gate 2</Text>
-							</View>
-						</View>
+								return (
+									<View key={item.id} style={styles.checkItem}>
+										<Text style={styles.checkLabel}>{item.label}</Text>
+										<Text style={styles.checkSubtext}>{item.detail}</Text>
+										<View style={styles.checkStatusRow}>
+											<MaterialCommunityIcons
+												name={isCompleted ? 'check-circle' : 'alert-circle-outline'}
+												size={12}
+												color={isCompleted ? SUCCESS : GOLD}
+											/>
+											<Text
+												style={[
+													styles.checkStatusText,
+													isCompleted ? styles.checkStatusCompleted : styles.checkStatusIncomplete,
+												]}
+											>
+												{isCompleted ? 'Completed' : 'Lacking / Not Complete'}
+											</Text>
+										</View>
+									</View>
+								);
+							})
+						)}
 					</View>
 				</View>
 
@@ -284,7 +398,7 @@ export default function ScholarDashboard({ navigation }) {
 						key={label}
 						style={[styles.navItem, active && styles.navItemActive]}
 						activeOpacity={0.85}
-						onPress={() => route && navigation?.navigate(route)}
+						onPress={() => route && navigation?.replace(route)}
 					>
 						<MaterialCommunityIcons name={icon} size={20} color={active ? GOLD : SLATE_300} />
 						<Text style={[styles.navText, active && styles.navTextActive]}>{label}</Text>
@@ -538,43 +652,104 @@ const styles = StyleSheet.create({
 		fontSize: 12,
 		lineHeight: 18,
 	},
+	noRequirementsText: {
+		color: SLATE_300,
+		fontSize: 12,
+		lineHeight: 18,
+	},
+	checkStatusRow: {
+		marginTop: 8,
+		flexDirection: 'row',
+		alignItems: 'center',
+	},
+	checkStatusText: {
+		fontSize: 11,
+		fontWeight: '700',
+		marginLeft: 6,
+		textTransform: 'uppercase',
+		letterSpacing: 0.3,
+	},
+	checkStatusCompleted: {
+		color: SUCCESS,
+	},
+	checkStatusIncomplete: {
+		color: GOLD,
+	},
 	claimingCard: {
-		backgroundColor: GOLD,
+		backgroundColor: CARD_BG,
 		borderRadius: 16,
 		padding: 16,
+		borderWidth: 1,
+		borderColor: 'rgba(212, 175, 55, 0.24)',
+	},
+	claimingHeaderRow: {
+		marginBottom: 12,
+	},
+	claimingTitleWrap: {
+		flexDirection: 'row',
+		alignItems: 'center',
+	},
+	claimingTitleIcon: {
+		width: 26,
+		height: 26,
+		borderRadius: 8,
+		alignItems: 'center',
+		justifyContent: 'center',
+		backgroundColor: 'rgba(212, 175, 55, 0.14)',
+		marginRight: 8,
 	},
 	claimingTitle: {
-		color: OCEAN_DEEP,
-		fontSize: 20,
+		color: SLATE_100,
+		fontSize: 18,
 		fontWeight: '700',
-		marginBottom: 12,
 	},
-	claimingTopRow: {
+	claimingInfoRow: {
 		flexDirection: 'row',
 		justifyContent: 'space-between',
-		alignItems: 'flex-start',
-		marginBottom: 12,
+		alignItems: 'stretch',
+		gap: 10,
+	},
+	claimingQueueCard: {
+		flex: 0.9,
+		backgroundColor: CARD_ALT_BG,
+		borderRadius: 12,
+		padding: 12,
+		borderWidth: 1,
+		borderColor: 'rgba(212, 175, 55, 0.22)',
+	},
+	claimingCashierCard: {
+		flex: 1.1,
+		backgroundColor: CARD_ALT_BG,
+		borderRadius: 12,
+		padding: 12,
+		borderWidth: 1,
+		borderColor: 'rgba(212, 175, 55, 0.22)',
 	},
 	claimingLabel: {
-		color: 'rgba(0, 27, 46, 0.8)',
+		color: SLATE_300,
 		fontSize: 10,
 		fontWeight: '700',
 		letterSpacing: 0.4,
 	},
 	claimingQueue: {
-		color: OCEAN_DEEP,
-		fontSize: 34,
+		color: GOLD,
+		fontSize: 30,
 		fontWeight: '800',
-		marginTop: 2,
+		marginTop: 6,
 	},
-	claimingRight: {
-		alignItems: 'flex-end',
+	claimingCashierPill: {
+		marginTop: 8,
+		paddingHorizontal: 10,
+		paddingVertical: 8,
+		borderRadius: 10,
+		backgroundColor: 'rgba(212, 175, 55, 0.12)',
+		borderWidth: 1,
+		borderColor: 'rgba(212, 175, 55, 0.22)',
 	},
 	claimingCounter: {
-		color: OCEAN_DEEP,
-		fontSize: 22,
+		color: SLATE_100,
+		fontSize: 16,
 		fontWeight: '700',
-		marginTop: 2,
 	},
 	claimingLocation: {
 		backgroundColor: 'rgba(0, 27, 46, 0.18)',

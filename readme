@@ -29,8 +29,9 @@ Required SDK Version 54
 Required node version 22
 
 Startup commands:
-- npx expo start         (default Expo start)
-- npm run start          (same as default)
+- npm run start          (recommended: auto-picks free port, LAN mode, clears cache)
+- npx expo start         (raw Expo start)
+- npm run start:tunnel   (optional, requires ngrok connectivity)
 
 If Expo Go cannot connect:
 - Keep `npx expo start` running in one terminal.
