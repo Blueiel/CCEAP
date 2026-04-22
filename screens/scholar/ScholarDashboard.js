@@ -25,6 +25,12 @@ const SLATE_100 = '#f1f5f9';
 const SLATE_300 = '#cbd5e1';
 const SUCCESS = '#4ade80';
 
+// Light mode colors
+const LIGHT_BG = '#f5f5f5';
+const LIGHT_CARD = '#ffffff';
+const LIGHT_TEXT = '#1a1a1a';
+const LIGHT_TEXT_SECONDARY = '#666666';
+
 const DEFAULT_REQUIREMENTS_CHECKLIST = [
 	{
 		id: '1',
@@ -65,6 +71,7 @@ export default function ScholarDashboard({ navigation }) {
 	const [grantClaimingLocation, setGrantClaimingLocation] = React.useState('Location to be announced');
 	const [claimingQueueNumber, setClaimingQueueNumber] = React.useState('Not set');
 	const [assignedCashierName, setAssignedCashierName] = React.useState('Not assigned');
+	const [darkMode, setDarkMode] = React.useState(false);
 	const [requirementsChecklist, setRequirementsChecklist] = React.useState(
 		DEFAULT_REQUIREMENTS_CHECKLIST.map((item, index) => ({
 			...normalizeRequirement(item, index),
@@ -155,36 +162,46 @@ export default function ScholarDashboard({ navigation }) {
 			const queueNumber = Number(profile?.claimingInfo?.queueNumber || 0);
 			setClaimingQueueNumber(queueNumber > 0 ? `#${queueNumber}` : 'Not set');
 
-			let matchedCashierName = (profile?.claimingInfo?.cashierAssigned || '').trim() || 'Not assigned';
-			try {
-				const cashiersSnapshot = await get(ref(database, 'adminConfig/cashiers'));
-				const rawCashiers = cashiersSnapshot.exists() ? cashiersSnapshot.val() : null;
-				const cashierItems = Array.isArray(rawCashiers?.items) ? rawCashiers.items : [];
-				const normalizedScholarSchool = scholarSchoolName.toLowerCase();
+			// Fetch current cashier assignment based on school (priority: dynamic > stored)
+			let matchedCashierName = 'Not assigned';
+			
+			// Only attempt cashier lookup if scholar has a school assigned
+			if (scholarSchoolName) {
+				try {
+					const cashiersSnapshot = await get(ref(database, 'adminConfig/cashiers'));
+					const rawCashiers = cashiersSnapshot.exists() ? cashiersSnapshot.val() : null;
+					const cashierItems = Array.isArray(rawCashiers?.items) ? rawCashiers.items : [];
+					const normalizedScholarSchool = scholarSchoolName.toLowerCase();
 
-				const matchedCashier = cashierItems
-					.map((item) => {
-						const schools = Array.isArray(item?.schools)
-							? item.schools.map((entry) => String(entry || '').trim()).filter(Boolean)
-							: (item?.school || item?.counterLabel || '').trim()
-							? [String(item?.school || item?.counterLabel).trim()]
-							: [];
+					const matchedCashier = cashierItems
+						.map((item) => {
+							const schools = Array.isArray(item?.schools)
+								? item.schools.map((entry) => String(entry || '').trim()).filter(Boolean)
+								: (item?.school || item?.counterLabel || '').trim()
+								? [String(item?.school || item?.counterLabel).trim()]
+								: [];
 
-						return {
-							fullName: (item?.fullName || '').trim(),
-							schools,
-							active: item?.active !== false,
-						};
-					})
-					.filter((item) => item.active && item.fullName)
-					.sort((a, b) => a.fullName.localeCompare(b.fullName))
-					.find((item) =>
-						item.schools.some((school) => school.trim().toLowerCase() === normalizedScholarSchool)
-					);
+							return {
+								fullName: (item?.fullName || '').trim(),
+								schools,
+								active: item?.active !== false,
+							};
+						})
+						.filter((item) => item.active && item.fullName)
+						.sort((a, b) => a.fullName.localeCompare(b.fullName))
+						.find((item) =>
+							item.schools.some((school) => school.trim().toLowerCase() === normalizedScholarSchool)
+						);
 
-				matchedCashierName = matchedCashier?.fullName || matchedCashierName;
-			} catch {
-				matchedCashierName = matchedCashierName || 'Not assigned';
+					// Use dynamically matched cashier if found, otherwise fall back to stored value
+					matchedCashierName = matchedCashier?.fullName || (profile?.claimingInfo?.cashierAssigned || '').trim() || 'Not assigned';
+				} catch {
+					// If fetch fails, use stored value as fallback
+					matchedCashierName = (profile?.claimingInfo?.cashierAssigned || '').trim() || 'Not assigned';
+				}
+			} else {
+				// No school assigned yet, use stored value if available
+				matchedCashierName = (profile?.claimingInfo?.cashierAssigned || '').trim() || 'Not assigned';
 			}
 
 			setAssignedCashierName(matchedCashierName);
@@ -257,37 +274,51 @@ export default function ScholarDashboard({ navigation }) {
 		]);
 	};
 
-	return (
-		<SafeAreaView style={styles.safe}>
-			<StatusBar style="light" />
+	const handleDarkModeToggle = () => {
+		toggleDarkMode();
+	};
 
-			<View style={styles.header}>
+	const backgroundColor = darkMode ? OCEAN_DEEP : LIGHT_BG;
+	const headerBgColor = darkMode ? OCEAN_DEEP : LIGHT_BG;
+	const cardBgColor = darkMode ? CARD_BG : LIGHT_CARD;
+	const textColor = darkMode ? SLATE_100 : LIGHT_TEXT;
+	const secondaryTextColor = darkMode ? SLATE_300 : LIGHT_TEXT_SECONDARY;
+
+	return (
+		<SafeAreaView style={[styles.safe, { backgroundColor }]}>
+			<StatusBar barStyle={darkMode ? 'light-content' : 'dark-content'} translucent={true} backgroundColor="transparent" />
+
+			<View style={[styles.header, { backgroundColor: headerBgColor }]}>
 				<View style={styles.headerLeft}>
-					<Text style={styles.brand}>Hi, {headerFirstName}</Text>
-					<View style={styles.headerTag}>
+					<Text style={[styles.brand, { color: textColor }]}>Hi, {headerFirstName}</Text>
+					<View style={[styles.headerTag, { backgroundColor: darkMode ? 'rgba(212, 175, 55, 0.12)' : 'rgba(212, 175, 55, 0.2)' }]}>
 						<Text style={styles.headerTagText}>ACTIVE SCHOLAR</Text>
 					</View>
 				</View>
 
-				<TouchableOpacity style={styles.notifButton} activeOpacity={0.85} onPress={handleLogout}>
+				<TouchableOpacity style={[styles.darkModeToggle, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleDarkModeToggle}>
+					<MaterialCommunityIcons name={darkMode ? 'white-balance-sunny' : 'moon-waning-crescent'} size={18} color={GOLD} />
+				</TouchableOpacity>
+
+				<TouchableOpacity style={[styles.notifButton, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleLogout}>
 					<MaterialCommunityIcons name="logout" size={22} color={GOLD} />
 				</TouchableOpacity>
 			</View>
 
-			<ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+			<ScrollView contentContainerStyle={[styles.scroll, { backgroundColor }]} showsVerticalScrollIndicator={false}>
 				<View style={styles.section}>
 					<View style={styles.sectionHeaderRow}>
-						<Text style={styles.sectionTitle}>My Status</Text>
-						<View style={styles.badge}>
-							<Text style={styles.badgeText}>{scholarYearLevel}</Text>
-						</View>
+					<Text style={[styles.sectionTitle, { color: textColor }]}>My Status</Text>
+					<View style={[styles.badge, { backgroundColor: darkMode ? 'rgba(212, 175, 55, 0.12)' : 'rgba(212, 175, 55, 0.2)' }]}>
+						<Text style={styles.badgeText}>{scholarYearLevel}</Text>
 					</View>
+				</View>
 
-					<View style={styles.statusCard}>
-						<View style={styles.statusTopRow}>
-							<View>
-								<Text style={styles.statusName}>{scholarName}</Text>
-								<Text style={styles.statusSchool}>{scholarSchool}</Text>
+				<View style={[styles.statusCard, { backgroundColor: darkMode ? GOLD : '#FFE4B5' }]}>
+							<View style={styles.statusTopRow}>
+								<View>
+									<Text style={[styles.statusName, { color: darkMode ? OCEAN_DEEP : LIGHT_TEXT }]}>{scholarName}</Text>
+									<Text style={[styles.statusSchool, { color: darkMode ? 'rgba(0, 27, 46, 0.8)' : 'rgba(26, 26, 26, 0.7)' }]}>{scholarSchool}</Text>
 							</View>
 						</View>
 
@@ -307,15 +338,15 @@ export default function ScholarDashboard({ navigation }) {
 				</View>
 
 				<View style={styles.section}>
-					<Text style={styles.sectionTitle}>My Appointment</Text>
+					<Text style={[styles.sectionTitle, { color: textColor }]}>My Appointment</Text>
 					<TouchableOpacity
-						style={styles.timelineCard}
+						style={[styles.timelineCard, { backgroundColor: cardBgColor, borderLeftColor: GOLD }]}
 						activeOpacity={0.85}
 						onPress={() => navigation?.replace('Appointment')}
 					>
 						<MaterialCommunityIcons name="calendar-check-outline" size={22} color={GOLD} style={styles.timelineIcon} />
-						<Text style={styles.timelineStep}>Scheduling</Text>
-						<Text style={styles.timelineTitle}>Book or Update Appointment</Text>
+						<Text style={[styles.timelineStep, { color: GOLD }]}>Scheduling</Text>
+						<Text style={[styles.timelineTitle, { color: textColor }]}>Book or Update Appointment</Text>
 						<View style={styles.timelineStateRow}>
 							<MaterialCommunityIcons name="arrow-right-circle-outline" size={12} color={GOLD} />
 							<Text style={[styles.timelineState, styles.timelineStateActive]}>OPEN APPOINTMENT PAGE</Text>
@@ -324,26 +355,26 @@ export default function ScholarDashboard({ navigation }) {
 				</View>
 
 				<View style={styles.section}>
-					<View style={styles.claimingCard}>
+					<View style={[styles.claimingCard, { backgroundColor: darkMode ? 'rgba(212, 175, 55, 0.15)' : 'rgba(212, 175, 55, 0.1)', borderColor: darkMode ? GOLD : 'rgba(212, 175, 55, 0.5)' }]}>
 						<View style={styles.claimingHeaderRow}>
 							<View style={styles.claimingTitleWrap}>
-								<View style={styles.claimingTitleIcon}>
+								<View style={[styles.claimingTitleIcon, { backgroundColor: darkMode ? 'rgba(212, 175, 55, 0.14)' : 'rgba(212, 175, 55, 0.2)' }]}>
 									<MaterialCommunityIcons name="cash-register" size={16} color={GOLD} />
 								</View>
-								<Text style={styles.claimingTitle}>My Claiming Info</Text>
+								<Text style={[styles.claimingTitle, { color: textColor }]}>My Claiming Info</Text>
 							</View>
 						</View>
 
-						<View style={styles.claimingInfoRow}>
-							<View style={styles.claimingQueueCard}>
-								<Text style={styles.claimingLabel}>QUEUE NUMBER</Text>
-								<Text style={styles.claimingQueue}>{claimingQueueNumber}</Text>
-							</View>
+								<View style={styles.claimingInfoRow}>
+									<View style={[styles.claimingQueueCard, { backgroundColor: darkMode ? GOLD : '#FFE4B5' }]}>
+										<Text style={[styles.claimingLabel, { color: darkMode ? OCEAN_DEEP : LIGHT_TEXT }]}>QUEUE NUMBER</Text>
+										<Text style={[styles.claimingQueue, { color: darkMode ? OCEAN_DEEP : LIGHT_TEXT }]}>{claimingQueueNumber}</Text>
+									</View>
 
-							<View style={styles.claimingCashierCard}>
-								<Text style={styles.claimingLabel}>CASHIER ASSIGNED</Text>
-								<View style={styles.claimingCashierPill}>
-									<Text style={styles.claimingCounter}>{assignedCashierName}</Text>
+									<View style={[styles.claimingCashierCard, { backgroundColor: darkMode ? GOLD : '#FFE4B5' }]}>
+										<Text style={[styles.claimingLabel, { color: darkMode ? OCEAN_DEEP : LIGHT_TEXT }]}>CASHIER ASSIGNED</Text>
+										<View style={[styles.claimingCashierPill, { backgroundColor: darkMode ? 'rgba(0, 27, 46, 0.15)' : 'rgba(26, 26, 26, 0.1)', borderColor: darkMode ? OCEAN_DEEP : LIGHT_TEXT }]}>
+											<Text style={[styles.claimingCounter, { color: darkMode ? OCEAN_DEEP : LIGHT_TEXT }]}>{assignedCashierName}</Text>
 								</View>
 							</View>
 						</View>
@@ -351,18 +382,18 @@ export default function ScholarDashboard({ navigation }) {
 				</View>
 
 				<View style={styles.section}>
-					<View style={styles.whiteCard}>
-						<Text style={styles.cardTitle}>Requirements</Text>
+					<View style={[styles.whiteCard, { backgroundColor: cardBgColor }]}>
+						<Text style={[styles.cardTitle, { color: textColor }]}>Requirements</Text>
 						{requirementsChecklist.length === 0 ? (
-							<Text style={styles.noRequirementsText}>No required items configured yet.</Text>
+									<Text style={[styles.noRequirementsText, { color: secondaryTextColor }]}>No required items configured yet.</Text>
 						) : (
 							requirementsChecklist.map((item) => {
 								const isCompleted = !!item.completed;
 
 								return (
-									<View key={item.id} style={styles.checkItem}>
-										<Text style={styles.checkLabel}>{item.label}</Text>
-										<Text style={styles.checkSubtext}>{item.detail}</Text>
+									<View key={item.id} style={[styles.checkItem, { backgroundColor: darkMode ? CARD_ALT_BG : '#f9f9f9', borderColor: darkMode ? 'rgba(212, 175, 55, 0.32)' : 'rgba(212, 175, 55, 0.15)' }]}>
+										<Text style={[styles.checkLabel, { color: textColor }]}>{item.label}</Text>
+										<Text style={[styles.checkSubtext, { color: secondaryTextColor }]}>{item.detail}</Text>
 										<View style={styles.checkStatusRow}>
 											<MaterialCommunityIcons
 												name={isCompleted ? 'check-circle' : 'alert-circle-outline'}
@@ -387,7 +418,7 @@ export default function ScholarDashboard({ navigation }) {
 
 			</ScrollView>
 
-			<View style={styles.bottomNav}>
+			<View style={[styles.bottomNav, { backgroundColor: cardBgColor }]}>
 				{[
 					['view-dashboard-outline', 'Status', true, null],
 					['calendar-check-outline', 'Appointment', false, 'Appointment'],
@@ -463,6 +494,17 @@ const styles = StyleSheet.create({
 		fontWeight: '700',
 		letterSpacing: 0.4,
 	},
+	darkModeToggle: {
+		width: 38,
+		height: 38,
+		borderRadius: 19,
+		backgroundColor: CARD_BG,
+		borderWidth: 1,
+		borderColor: 'rgba(212, 175, 55, 0.24)',
+		justifyContent: 'center',
+		alignItems: 'center',
+		marginRight: 10,
+	},
 	notifButton: {
 		width: 38,
 		height: 38,
@@ -478,6 +520,7 @@ const styles = StyleSheet.create({
 		paddingHorizontal: 20,
 		paddingTop: 16,
 		paddingBottom: 110,
+		backgroundColor: OCEAN_DEEP,
 	},
 	section: {
 		marginBottom: 22,
@@ -676,11 +719,11 @@ const styles = StyleSheet.create({
 		color: GOLD,
 	},
 	claimingCard: {
-		backgroundColor: CARD_BG,
+		backgroundColor: 'rgba(212, 175, 55, 0.15)',
 		borderRadius: 16,
 		padding: 16,
 		borderWidth: 1,
-		borderColor: 'rgba(212, 175, 55, 0.24)',
+		borderColor: GOLD,
 	},
 	claimingHeaderRow: {
 		marginBottom: 12,
@@ -711,28 +754,28 @@ const styles = StyleSheet.create({
 	},
 	claimingQueueCard: {
 		flex: 0.9,
-		backgroundColor: CARD_ALT_BG,
+		backgroundColor: GOLD,
 		borderRadius: 12,
 		padding: 12,
 		borderWidth: 1,
-		borderColor: 'rgba(212, 175, 55, 0.22)',
+		borderColor: GOLD,
 	},
 	claimingCashierCard: {
 		flex: 1.1,
-		backgroundColor: CARD_ALT_BG,
+		backgroundColor: GOLD,
 		borderRadius: 12,
 		padding: 12,
 		borderWidth: 1,
-		borderColor: 'rgba(212, 175, 55, 0.22)',
+		borderColor: GOLD,
 	},
 	claimingLabel: {
-		color: SLATE_300,
+		color: OCEAN_DEEP,
 		fontSize: 10,
 		fontWeight: '700',
 		letterSpacing: 0.4,
 	},
 	claimingQueue: {
-		color: GOLD,
+		color: OCEAN_DEEP,
 		fontSize: 30,
 		fontWeight: '800',
 		marginTop: 6,
@@ -742,12 +785,12 @@ const styles = StyleSheet.create({
 		paddingHorizontal: 10,
 		paddingVertical: 8,
 		borderRadius: 10,
-		backgroundColor: 'rgba(212, 175, 55, 0.12)',
+		backgroundColor: 'rgba(0, 27, 46, 0.15)',
 		borderWidth: 1,
-		borderColor: 'rgba(212, 175, 55, 0.22)',
+		borderColor: OCEAN_DEEP,
 	},
 	claimingCounter: {
-		color: SLATE_100,
+		color: OCEAN_DEEP,
 		fontSize: 16,
 		fontWeight: '700',
 	},

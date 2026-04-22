@@ -16,6 +16,7 @@ import { useNavigation } from '@react-navigation/native';
 import { ref, get, set, serverTimestamp } from 'firebase/database';
 import { signOut } from 'firebase/auth';
 import { auth, database } from '../../lib/firebase';
+import { useTheme } from '../../lib/ThemeContext';
 
 const GOLD = '#D4AF37';
 const OCEAN_DEEP = '#001B2E';
@@ -23,6 +24,12 @@ const CARD_BG = '#0B2740';
 const CARD_ALT_BG = '#12324E';
 const SLATE_100 = '#f1f5f9';
 const SLATE_300 = '#cbd5e1';
+
+// Light mode colors
+const LIGHT_BG = '#f5f5f5';
+const LIGHT_CARD = '#ffffff';
+const LIGHT_TEXT = '#1a1a1a';
+const LIGHT_TEXT_SECONDARY = '#666666';
 
 const DEFAULT_REQUIREMENTS = [
   {
@@ -61,6 +68,7 @@ const getDefaultRequirements = () =>
 export default function RequirementsSetup() {
   const navigation = useNavigation();
   const [headerFullName, setHeaderFullName] = React.useState('');
+  const [darkMode, setDarkMode] = React.useState(false);
   const [loading, setLoading] = React.useState(true);
   const [saving, setSaving] = React.useState(false);
   const [requirements, setRequirements] = React.useState([]);
@@ -83,6 +91,16 @@ export default function RequirementsSetup() {
       { text: 'Log out', style: 'destructive', onPress: performLogout },
     ]);
   };
+
+  const handleDarkModeToggle = () => {
+    toggleDarkMode();
+  };
+
+  const backgroundColor = darkMode ? OCEAN_DEEP : LIGHT_BG;
+  const headerBgColor = darkMode ? OCEAN_DEEP : LIGHT_BG;
+  const cardBgColor = darkMode ? CARD_BG : LIGHT_CARD;
+  const textColor = darkMode ? SLATE_100 : LIGHT_TEXT;
+  const secondaryTextColor = darkMode ? SLATE_300 : LIGHT_TEXT_SECONDARY;
 
   const loadData = React.useCallback(async () => {
     setLoading(true);
@@ -247,18 +265,22 @@ export default function RequirementsSetup() {
   };
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <StatusBar style="light" />
+    <SafeAreaView style={[styles.safe, { backgroundColor }]}>
+      <StatusBar barStyle={darkMode ? 'light-content' : 'dark-content'} />
 
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor }]}>
         <TouchableOpacity style={styles.iconButton} activeOpacity={0.85} onPress={() => navigation.goBack()}>
           <MaterialCommunityIcons name="arrow-left" size={22} color={GOLD} />
         </TouchableOpacity>
 
         <View style={styles.headerCenter}>
-          <Text style={styles.brand}>Requirements Setup</Text>
-          <Text style={styles.headerSubtitle}>Hi, {headerFullName || 'Admin'}</Text>
+          <Text style={[styles.brand, { color: textColor }]}>Requirements Setup</Text>
+          <Text style={[styles.headerSubtitle, { color: secondaryTextColor }]}>Hi, {headerFullName || 'Admin'}</Text>
         </View>
+
+        <TouchableOpacity style={[styles.darkModeToggle, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleDarkModeToggle}>
+          <MaterialCommunityIcons name={darkMode ? 'white-balance-sunny' : 'moon-waning-crescent'} size={18} color={GOLD} />
+        </TouchableOpacity>
 
         <TouchableOpacity style={styles.iconButton} activeOpacity={0.85} onPress={handleLogout}>
           <MaterialCommunityIcons name="logout" size={22} color={GOLD} />
@@ -268,30 +290,30 @@ export default function RequirementsSetup() {
       {loading ? (
         <View style={styles.loadingWrap}>
           <ActivityIndicator size="large" color={GOLD} />
-          <Text style={styles.loadingText}>Loading requirement setup...</Text>
+          <Text style={[styles.loadingText, { color: secondaryTextColor }]}>Loading requirement setup...</Text>
         </View>
       ) : (
-        <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-          <View style={styles.heroCard}>
-            <Text style={styles.heroTitle}>Assign scholar requirements</Text>
-            <Text style={styles.heroText}>
+        <ScrollView contentContainerStyle={[styles.scroll, { backgroundColor }]} showsVerticalScrollIndicator={false}>
+          <View style={[styles.heroCard, { backgroundColor: darkMode ? CARD_ALT_BG : '#f9f9f9' }]}>
+            <Text style={[styles.heroTitle, { color: textColor }]}>Assign scholar requirements</Text>
+            <Text style={[styles.heroText, { color: secondaryTextColor }]}>
               Add, edit, or delete requirement items. Checked items are required for scholars to submit.
             </Text>
           </View>
 
-          <View style={styles.formCard}>
-            <Text style={styles.formTitle}>{editingRequirementId ? 'Edit requirement' : 'Add requirement'}</Text>
+          <View style={[styles.formCard, { backgroundColor: cardBgColor }]}>
+            <Text style={[styles.formTitle, { color: textColor }]}>{editingRequirementId ? 'Edit requirement' : 'Add requirement'}</Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { backgroundColor: darkMode ? CARD_ALT_BG : '#f9f9f9', color: textColor }]}
               placeholder="Requirement name"
-              placeholderTextColor={SLATE_300}
+              placeholderTextColor={secondaryTextColor}
               value={formLabel}
               onChangeText={setFormLabel}
             />
             <TextInput
-              style={[styles.input, styles.textArea]}
+              style={[styles.input, styles.textArea, { backgroundColor: darkMode ? CARD_ALT_BG : '#f9f9f9', color: textColor }]}
               placeholder="Details (optional)"
-              placeholderTextColor={SLATE_300}
+              placeholderTextColor={secondaryTextColor}
               multiline
               value={formDetail}
               onChangeText={setFormDetail}
@@ -302,33 +324,33 @@ export default function RequirementsSetup() {
                 <MaterialCommunityIcons
                   name={editingRequirementId ? 'content-save-edit-outline' : 'plus-circle-outline'}
                   size={18}
-                  color={OCEAN_DEEP}
+                  color={darkMode ? OCEAN_DEEP : '#ffffff'}
                 />
-                <Text style={styles.formPrimaryText}>{editingRequirementId ? 'Update' : 'Add'}</Text>
+                <Text style={[styles.formPrimaryText, { color: darkMode ? OCEAN_DEEP : '#ffffff' }]}>{editingRequirementId ? 'Update' : 'Add'}</Text>
               </TouchableOpacity>
 
               {editingRequirementId ? (
-                <TouchableOpacity style={styles.formGhostButton} activeOpacity={0.85} onPress={resetForm}>
-                  <MaterialCommunityIcons name="close" size={18} color={SLATE_100} />
-                  <Text style={styles.formGhostText}>Cancel</Text>
+                <TouchableOpacity style={[styles.formGhostButton, { backgroundColor: darkMode ? 'rgba(212, 175, 55, 0.1)' : 'rgba(212, 175, 55, 0.05)', borderColor: darkMode ? 'rgba(212, 175, 55, 0.2)' : 'rgba(212, 175, 55, 0.15)' }]} activeOpacity={0.85} onPress={resetForm}>
+                  <MaterialCommunityIcons name="close" size={18} color={GOLD} />
+                  <Text style={[styles.formGhostText, { color: GOLD }]}>Cancel</Text>
                 </TouchableOpacity>
               ) : null}
             </View>
           </View>
 
           {requirements.map((item) => (
-            <View key={item.id} style={styles.itemCard}>
+            <View key={item.id} style={[styles.itemCard, { backgroundColor: cardBgColor }]}>
               <View style={styles.itemLeft}>
                 <TouchableOpacity style={styles.itemIconWrap} activeOpacity={0.85} onPress={() => toggleRequirement(item.id)}>
                   <MaterialCommunityIcons
                     name={item.required ? 'check-circle' : 'circle-outline'}
                     size={22}
-                    color={item.required ? GOLD : SLATE_300}
+                    color={item.required ? GOLD : secondaryTextColor}
                   />
                 </TouchableOpacity>
                 <View style={styles.itemTextWrap}>
-                  <Text style={styles.itemTitle}>{item.label}</Text>
-                  {item.detail ? <Text style={styles.itemDetail}>{item.detail}</Text> : null}
+                  <Text style={[styles.itemTitle, { color: textColor }]}>{item.label}</Text>
+                  {item.detail ? <Text style={[styles.itemDetail, { color: secondaryTextColor }]}>{item.detail}</Text> : null}
                 </View>
               </View>
 
@@ -358,11 +380,11 @@ export default function RequirementsSetup() {
             disabled={saving}
           >
             {saving ? (
-              <ActivityIndicator size="small" color={OCEAN_DEEP} />
+              <ActivityIndicator size="small" color={darkMode ? OCEAN_DEEP : '#ffffff'} />
             ) : (
-              <MaterialCommunityIcons name="content-save-outline" size={18} color={OCEAN_DEEP} />
+              <MaterialCommunityIcons name="content-save-outline" size={18} color={darkMode ? OCEAN_DEEP : '#ffffff'} />
             )}
-            <Text style={styles.saveButtonText}>{saving ? 'Saving...' : 'Save Setup'}</Text>
+            <Text style={[styles.saveButtonText, { color: darkMode ? OCEAN_DEEP : '#ffffff' }]}>{saving ? 'Saving...' : 'Save Setup'}</Text>
           </TouchableOpacity>
         </ScrollView>
       )}
@@ -373,13 +395,11 @@ export default function RequirementsSetup() {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: OCEAN_DEEP,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: OCEAN_DEEP,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(212, 175, 55, 0.2)',
     paddingHorizontal: 16,
@@ -389,7 +409,6 @@ const styles = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: 19,
-    backgroundColor: CARD_BG,
     borderWidth: 1,
     borderColor: 'rgba(212, 175, 55, 0.24)',
     justifyContent: 'center',
@@ -400,12 +419,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   brand: {
-    color: SLATE_100,
     fontSize: 18,
     fontWeight: '700',
   },
   headerSubtitle: {
-    color: SLATE_300,
     fontSize: 12,
     marginTop: 2,
   },
@@ -416,7 +433,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   loadingText: {
-    color: SLATE_300,
     marginTop: 10,
     fontSize: 13,
   },
@@ -427,33 +443,28 @@ const styles = StyleSheet.create({
   },
   heroCard: {
     borderRadius: 14,
-    backgroundColor: CARD_ALT_BG,
     borderWidth: 1,
     borderColor: 'rgba(212, 175, 55, 0.16)',
     padding: 14,
     marginBottom: 14,
   },
   heroTitle: {
-    color: SLATE_100,
     fontSize: 15,
     fontWeight: '700',
   },
   heroText: {
-    color: SLATE_300,
     fontSize: 12,
     marginTop: 6,
     lineHeight: 18,
   },
   formCard: {
     borderRadius: 14,
-    backgroundColor: CARD_BG,
     borderWidth: 1,
     borderColor: 'rgba(212, 175, 55, 0.16)',
     padding: 12,
     marginBottom: 12,
   },
   formTitle: {
-    color: SLATE_100,
     fontSize: 13,
     fontWeight: '700',
     marginBottom: 8,
@@ -462,8 +473,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderWidth: 1,
     borderColor: 'rgba(212, 175, 55, 0.16)',
-    backgroundColor: CARD_ALT_BG,
-    color: SLATE_100,
     fontSize: 12,
     paddingHorizontal: 10,
     paddingVertical: 10,
@@ -488,7 +497,6 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   formPrimaryText: {
-    color: OCEAN_DEEP,
     fontSize: 12,
     fontWeight: '700',
   },
@@ -505,12 +513,10 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   formGhostText: {
-    color: SLATE_100,
     fontSize: 12,
     fontWeight: '700',
   },
   itemCard: {
-    backgroundColor: CARD_BG,
     borderWidth: 1,
     borderColor: 'rgba(212, 175, 55, 0.16)',
     borderRadius: 14,
@@ -553,12 +559,10 @@ const styles = StyleSheet.create({
     paddingRight: 8,
   },
   itemTitle: {
-    color: SLATE_100,
     fontSize: 13,
     fontWeight: '700',
   },
   itemDetail: {
-    color: SLATE_300,
     fontSize: 11,
     marginTop: 3,
   },
@@ -576,7 +580,6 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   saveButtonText: {
-    color: OCEAN_DEEP,
     fontSize: 14,
     fontWeight: '700',
   },

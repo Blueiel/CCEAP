@@ -18,12 +18,20 @@ import { auth, database } from '../../lib/firebase';
 
 const GOLD = '#D4AF37';
 const OCEAN_DEEP = '#001B2E';
+const CARD_BG = '#003550';
 const SLATE_300 = '#cbd5e1';
 const SLATE_100 = '#f1f5f9';
+
+// Light mode colors
+const LIGHT_BG = '#f5f5f5';
+const LIGHT_CARD = '#ffffff';
+const LIGHT_TEXT = '#1a1a1a';
+const LIGHT_TEXT_SECONDARY = '#666666';
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
+  const [darkMode, setDarkMode] = React.useState(false);
   const [showPassword, setShowPassword] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [successState, setSuccessState] = React.useState({
@@ -31,6 +39,16 @@ export default function LoginScreen({ navigation }) {
     name: '',
     targetScreen: 'ScholarDashboard',
   });
+
+  const handleDarkModeToggle = () => {
+    toggleDarkMode();
+  };
+
+  const backgroundColor = darkMode ? OCEAN_DEEP : LIGHT_BG;
+  const headerBgColor = darkMode ? OCEAN_DEEP : LIGHT_BG;
+  const cardBgColor = darkMode ? CARD_BG : LIGHT_CARD;
+  const textColor = darkMode ? SLATE_100 : LIGHT_TEXT;
+  const secondaryTextColor = darkMode ? SLATE_300 : LIGHT_TEXT_SECONDARY;
 
   const handleLogin = async () => {
     const normalizedEmail = email.trim().toLowerCase();
@@ -97,14 +115,14 @@ export default function LoginScreen({ navigation }) {
   };
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="light-content" backgroundColor={OCEAN_DEEP} />
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+    <SafeAreaView style={[styles.safe, { backgroundColor }]}>
+      <StatusBar barStyle={darkMode ? 'light-content' : 'dark-content'} translucent={true} backgroundColor="transparent" />
+      <ScrollView contentContainerStyle={[styles.scroll, { backgroundColor }]} showsVerticalScrollIndicator={false}>
         
         {/* Header with Back Button */}
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation?.goBack()}>
-            <MaterialCommunityIcons name="arrow-left" size={28} color={SLATE_100} />
+            <MaterialCommunityIcons name="arrow-left" size={28} color={textColor} />
           </TouchableOpacity>
           <View style={styles.logoContainer}>
             <MaterialCommunityIcons name="school" size={32} color={GOLD} />
@@ -113,18 +131,18 @@ export default function LoginScreen({ navigation }) {
 
         {/* Main Content */}
         <View style={styles.container}>
-          <Text style={styles.title}>Welcome Back</Text>
-          <Text style={styles.subtitle}>Sign in to your Scholar account</Text>
+          <Text style={[styles.title, { color: textColor }]}>Welcome Back</Text>
+          <Text style={[styles.subtitle, { color: secondaryTextColor }]}>Sign in to your Scholar account</Text>
 
           {/* Email Input */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Email</Text>
-            <View style={styles.inputContainer}>
+            <Text style={[styles.label, { color: textColor }]}>Email</Text>
+            <View style={[styles.inputContainer, { borderColor: darkMode ? 'rgba(212, 175, 55, 0.2)' : 'rgba(212, 175, 55, 0.15)' }]}>
               <MaterialCommunityIcons name="email-outline" size={20} color={GOLD} />
               <TextInput
-                style={styles.input}
+                style={[styles.input, { color: textColor }]}
                 placeholder="your@email.com"
-                placeholderTextColor="rgba(203, 213, 225, 0.5)"
+                placeholderTextColor={darkMode ? 'rgba(203, 213, 225, 0.5)' : 'rgba(26, 26, 26, 0.4)'}
                 value={email}
                 onChangeText={setEmail}
                 keyboardType="email-address"
@@ -136,13 +154,13 @@ export default function LoginScreen({ navigation }) {
 
           {/* Password Input */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Password</Text>
-            <View style={styles.inputContainer}>
+            <Text style={[styles.label, { color: textColor }]}>Password</Text>
+            <View style={[styles.inputContainer, { borderColor: darkMode ? 'rgba(212, 175, 55, 0.2)' : 'rgba(212, 175, 55, 0.15)' }]}>
               <MaterialCommunityIcons name="lock-outline" size={20} color={GOLD} />
               <TextInput
-                style={styles.input}
+                style={[styles.input, { color: textColor }]}
                 placeholder="Enter your password"
-                placeholderTextColor="rgba(203, 213, 225, 0.5)"
+                placeholderTextColor={darkMode ? 'rgba(203, 213, 225, 0.5)' : 'rgba(26, 26, 26, 0.4)'}
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry={!showPassword}
@@ -161,7 +179,7 @@ export default function LoginScreen({ navigation }) {
 
           {/* Forgot Password */}
           <TouchableOpacity style={styles.forgotPassword}>
-            <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+            <Text style={[styles.forgotPasswordText, { color: GOLD }]}>Forgot Password?</Text>
           </TouchableOpacity>
 
           {/* Login Button */}
@@ -176,14 +194,14 @@ export default function LoginScreen({ navigation }) {
 
           {/* Divider */}
           <View style={styles.dividerContainer}>
-            <View style={styles.dividerLine} />
-            <Text style={styles.dividerText}>OR</Text>
-            <View style={styles.dividerLine} />
+            <View style={[styles.dividerLine, { backgroundColor: darkMode ? 'rgba(212, 175, 55, 0.2)' : 'rgba(212, 175, 55, 0.15)' }]} />
+            <Text style={[styles.dividerText, { color: secondaryTextColor }]}>OR</Text>
+            <View style={[styles.dividerLine, { backgroundColor: darkMode ? 'rgba(212, 175, 55, 0.2)' : 'rgba(212, 175, 55, 0.15)' }]} />
           </View>
 
           {/* Sign Up Link */}
           <View style={styles.footer}>
-            <Text style={styles.footerText}>Don't have an account? </Text>
+            <Text style={[styles.footerText, { color: secondaryTextColor }]}>Don't have an account? </Text>
             <TouchableOpacity onPress={() => navigation?.navigate('Signup')}>
               <Text style={styles.signUpLink}>Sign Up</Text>
             </TouchableOpacity>
@@ -204,13 +222,13 @@ export default function LoginScreen({ navigation }) {
         }
       >
         <View style={styles.successOverlay}>
-          <View style={styles.successCard}>
+          <View style={[styles.successCard, { backgroundColor: cardBgColor }]}>
             <View style={styles.successIconWrap}>
               <MaterialCommunityIcons name="check-decagram" size={34} color={GOLD} />
             </View>
 
-            <Text style={styles.successTitle}>Login Successful</Text>
-            <Text style={styles.successMessage}>Welcome, {successState.name}</Text>
+            <Text style={[styles.successTitle, { color: textColor }]}>Login Successful</Text>
+            <Text style={[styles.successMessage, { color: secondaryTextColor }]}>Welcome, {successState.name}</Text>
 
             <TouchableOpacity
               style={styles.successButton}
@@ -241,6 +259,7 @@ const styles = StyleSheet.create({
   scroll: {
     flexGrow: 1,
     paddingHorizontal: 20,
+    backgroundColor: OCEAN_DEEP,
   },
   header: {
     flexDirection: 'row',
@@ -418,5 +437,11 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '800',
     letterSpacing: 1,
+  },
+  darkModeToggle: {
+    borderRadius: 8,
+    padding: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

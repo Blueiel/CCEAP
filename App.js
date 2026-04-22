@@ -2,6 +2,7 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { ThemeProvider } from './lib/ThemeContext';
 import HomeScreen from './screens/auth/HomeScreen';
 import LoginScreen from './screens/auth/LoginScreen';
 import SignupScreen from './screens/auth/SignupScreen';
@@ -20,19 +21,64 @@ import Appointment from './screens/scholar/Appointment';
 import ScholarAnnouncement from './screens/scholar/Announcement';
 import ScholarSettings from './screens/scholar/Settings';
 
-const Stack = createNativeStackNavigator();
-const ADMIN_MODULE_TRANSITION = { animation: 'fade' };
-const SCHOLAR_MODULE_TRANSITION = { animation: 'fade' };
-
 const OCEAN_DEEP = '#001B2E';
 
+const Stack = createNativeStackNavigator();
+const ADMIN_MODULE_TRANSITION = { 
+  animation: 'fade',
+  animationDuration: 300,
+  cardStyle: { backgroundColor: OCEAN_DEEP },
+};
+const SCHOLAR_MODULE_TRANSITION = { 
+  animation: 'fade',
+  animationDuration: 300,
+  cardStyle: { backgroundColor: OCEAN_DEEP },
+};
+
 export default function App() {
+  const navigationTheme = {
+    dark: true,
+    colors: {
+      primary: OCEAN_DEEP,
+      background: OCEAN_DEEP,
+      card: OCEAN_DEEP,
+      text: '#f1f5f9',
+      border: 'rgba(212, 175, 55, 0.2)',
+      notification: '#D4AF37',
+    },
+    fonts: {
+      regular: {
+        fontFamily: 'System',
+        fontWeight: '400',
+      },
+      medium: {
+        fontFamily: 'System',
+        fontWeight: '500',
+      },
+      semibold: {
+        fontFamily: 'System',
+        fontWeight: '600',
+      },
+      bold: {
+        fontFamily: 'System',
+        fontWeight: '700',
+      },
+      heavy: {
+        fontFamily: 'System',
+        fontWeight: '800',
+      },
+    },
+  };
+
   return (
     <SafeAreaProvider>
-      <NavigationContainer>
+      <ThemeProvider>
+        <NavigationContainer theme={navigationTheme}>
         <Stack.Navigator
           screenOptions={{
             headerShown: false,
+            cardStyle: { backgroundColor: OCEAN_DEEP },
+            animationEnabled: true,
           }}
         >
           <Stack.Screen name="Home" component={HomeScreen} />
@@ -109,7 +155,6 @@ export default function App() {
             options={SCHOLAR_MODULE_TRANSITION}
           />
         </Stack.Navigator>
-      </NavigationContainer>
-    </SafeAreaProvider>
+      </NavigationContainer>      </ThemeProvider>    </SafeAreaProvider>
   );
 }

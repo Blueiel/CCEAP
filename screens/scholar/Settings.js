@@ -29,6 +29,12 @@ const CARD_ALT_BG = '#12324E';
 const SLATE_100 = '#f1f5f9';
 const SLATE_300 = '#cbd5e1';
 
+// Light mode colors
+const LIGHT_BG = '#f5f5f5';
+const LIGHT_CARD = '#ffffff';
+const LIGHT_TEXT = '#1a1a1a';
+const LIGHT_TEXT_SECONDARY = '#666666';
+
 const splitFullName = (fullName = '') => {
 	const parts = fullName.trim().split(/\s+/).filter(Boolean);
 
@@ -53,6 +59,7 @@ const splitFullName = (fullName = '') => {
 
 export default function Settings({ navigation }) {
 	const [headerFirstName, setHeaderFirstName] = React.useState('Scholar');
+	const [darkMode, setDarkMode] = React.useState(false);
 	const [isLoading, setIsLoading] = React.useState(true);
 	const [isSavingProfile, setIsSavingProfile] = React.useState(false);
 	const [isSavingAccount, setIsSavingAccount] = React.useState(false);
@@ -68,6 +75,16 @@ export default function Settings({ navigation }) {
 	const [currentPassword, setCurrentPassword] = React.useState('');
 	const [newPassword, setNewPassword] = React.useState('');
 	const [confirmPassword, setConfirmPassword] = React.useState('');
+
+	const handleDarkModeToggle = () => {
+		toggleDarkMode();
+	};
+
+	const backgroundColor = darkMode ? OCEAN_DEEP : LIGHT_BG;
+	const headerBgColor = darkMode ? OCEAN_DEEP : LIGHT_BG;
+	const cardBgColor = darkMode ? CARD_BG : LIGHT_CARD;
+	const textColor = darkMode ? SLATE_100 : LIGHT_TEXT;
+	const secondaryTextColor = darkMode ? SLATE_300 : LIGHT_TEXT_SECONDARY;
 
 	const loadProfile = React.useCallback(async () => {
 		const user = auth.currentUser;
@@ -240,69 +257,73 @@ export default function Settings({ navigation }) {
 	};
 
 	return (
-		<SafeAreaView style={styles.safe}>
-			<StatusBar style="light" />
+		<SafeAreaView style={[styles.safe, { backgroundColor }]}>
+			<StatusBar barStyle={darkMode ? 'light-content' : 'dark-content'} translucent={true} backgroundColor="transparent" />
 
-			<View style={styles.header}>
-				<View style={styles.headerLeft}>
-					<Text style={styles.brand}>Hi, {headerFirstName}</Text>
-					<View style={styles.headerTag}>
-						<Text style={styles.headerTagText}>ACTIVE SCHOLAR</Text>
-					</View>
+<View style={[styles.header, { backgroundColor: headerBgColor }]}>
+			<View style={styles.headerLeft}>
+				<Text style={[styles.brand, { color: textColor }]}>Hi, {headerFirstName}</Text>
+				<View style={styles.headerTag}>
+					<Text style={styles.headerTagText}>ACTIVE SCHOLAR</Text>
 				</View>
+			</View>
+
+			<TouchableOpacity style={[styles.darkModeToggle, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleDarkModeToggle}>
+				<MaterialCommunityIcons name={darkMode ? 'white-balance-sunny' : 'moon-waning-crescent'} size={18} color={GOLD} />
+			</TouchableOpacity>
 
 				<TouchableOpacity style={styles.notifButton} activeOpacity={0.85} onPress={handleLogout}>
 					<MaterialCommunityIcons name="logout" size={22} color={GOLD} />
 				</TouchableOpacity>
 			</View>
 
-			<ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-				<View style={styles.card}>
-					<Text style={styles.sectionTitle}>Edit Profile</Text>
+		<ScrollView contentContainerStyle={[styles.scroll, { backgroundColor }]} showsVerticalScrollIndicator={false}>
+			<View style={[styles.card, { backgroundColor: cardBgColor }]}>
+				<Text style={[styles.sectionTitle, { color: textColor }]}>Edit Profile</Text>
 
-					<Text style={styles.label}>First Name</Text>
+				<Text style={[styles.label, { color: textColor }]}>First Name</Text>
 					<TextInput
-						style={styles.input}
+						style={[styles.input, { color: textColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.24)' : 'rgba(212, 175, 55, 0.15)' }]}
 						value={firstName}
 						onChangeText={setFirstName}
 						placeholder="First name"
-						placeholderTextColor="rgba(203, 213, 225, 0.45)"
+						placeholderTextColor={darkMode ? 'rgba(203, 213, 225, 0.45)' : 'rgba(26, 26, 26, 0.4)'}
 					/>
 
-					<Text style={styles.label}>Middle Name</Text>
-					<TextInput
-						style={styles.input}
-						value={middleName}
-						onChangeText={setMiddleName}
-						placeholder="Middle name"
-						placeholderTextColor="rgba(203, 213, 225, 0.45)"
+				<Text style={[styles.label, { color: textColor }]}>Middle Name</Text>
+				<TextInput
+					style={[styles.input, { color: textColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.24)' : 'rgba(212, 175, 55, 0.15)' }]}
+					value={middleName}
+					onChangeText={setMiddleName}
+					placeholder="Middle name"
+					placeholderTextColor={darkMode ? 'rgba(203, 213, 225, 0.45)' : 'rgba(26, 26, 26, 0.4)'}
 					/>
 
-					<Text style={styles.label}>Last Name</Text>
-					<TextInput
-						style={styles.input}
-						value={lastName}
-						onChangeText={setLastName}
-						placeholder="Last name"
-						placeholderTextColor="rgba(203, 213, 225, 0.45)"
+				<Text style={[styles.label, { color: textColor }]}>Last Name</Text>
+				<TextInput
+					style={[styles.input, { color: textColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.24)' : 'rgba(212, 175, 55, 0.15)' }]}
+					value={lastName}
+					onChangeText={setLastName}
+					placeholder="Last name"
+					placeholderTextColor={darkMode ? 'rgba(203, 213, 225, 0.45)' : 'rgba(26, 26, 26, 0.4)'}
 					/>
 
-					<Text style={styles.label}>Year Level</Text>
-					<TextInput
-						style={styles.input}
-						value={yearLevel}
-						onChangeText={setYearLevel}
-						placeholder="e.g., 3rd Year"
-						placeholderTextColor="rgba(203, 213, 225, 0.45)"
+				<Text style={[styles.label, { color: textColor }]}>Year Level</Text>
+				<TextInput
+					style={[styles.input, { color: textColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.24)' : 'rgba(212, 175, 55, 0.15)' }]}
+					value={yearLevel}
+					onChangeText={setYearLevel}
+					placeholder="e.g., 3rd Year"
+					placeholderTextColor={darkMode ? 'rgba(203, 213, 225, 0.45)' : 'rgba(26, 26, 26, 0.4)'}
 					/>
 
-					<Text style={styles.label}>School</Text>
-					<TextInput
-						style={styles.input}
-						value={school}
-						onChangeText={setSchool}
-						placeholder="School name"
-						placeholderTextColor="rgba(203, 213, 225, 0.45)"
+				<Text style={[styles.label, { color: textColor }]}>School</Text>
+				<TextInput
+					style={[styles.input, { color: textColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.24)' : 'rgba(212, 175, 55, 0.15)' }]}
+					value={school}
+					onChangeText={setSchool}
+					placeholder="School name"
+					placeholderTextColor={darkMode ? 'rgba(203, 213, 225, 0.45)' : 'rgba(26, 26, 26, 0.4)'}
 					/>
 
 					<TouchableOpacity
@@ -317,64 +338,64 @@ export default function Settings({ navigation }) {
 					</TouchableOpacity>
 				</View>
 
-				<View style={[styles.card, styles.cardSpacing]}>
-					<Text style={styles.sectionTitle}>Account Security</Text>
+			<View style={[styles.card, styles.cardSpacing, { backgroundColor: cardBgColor }]}>
+				<Text style={[styles.sectionTitle, { color: textColor }]}>Account Security</Text>
 
-					<Text style={styles.label}>Current Email</Text>
-					<TextInput
-						style={[styles.input, styles.readOnlyInput]}
-						value={email}
-						editable={false}
-						placeholder="Email"
-						placeholderTextColor="rgba(203, 213, 225, 0.45)"
+				<Text style={[styles.label, { color: textColor }]}>Current Email</Text>
+				<TextInput
+					style={[styles.input, styles.readOnlyInput, { color: textColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.24)' : 'rgba(212, 175, 55, 0.15)', backgroundColor: darkMode ? 'rgba(212, 175, 55, 0.08)' : 'rgba(0, 0, 0, 0.02)' }]}
+					value={email}
+					editable={false}
+					placeholder="Email"
+					placeholderTextColor={darkMode ? 'rgba(203, 213, 225, 0.45)' : 'rgba(26, 26, 26, 0.4)'}
 					/>
 
-					<Text style={styles.label}>New Email</Text>
-					<TextInput
-						style={styles.input}
-						value={newEmail}
-						onChangeText={setNewEmail}
-						keyboardType="email-address"
-						autoCapitalize="none"
-						autoCorrect={false}
-						placeholder="new@email.com"
-						placeholderTextColor="rgba(203, 213, 225, 0.45)"
+				<Text style={[styles.label, { color: textColor }]}>New Email</Text>
+				<TextInput
+					style={[styles.input, { color: textColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.24)' : 'rgba(212, 175, 55, 0.15)' }]}
+					value={newEmail}
+					onChangeText={setNewEmail}
+					keyboardType="email-address"
+					autoCapitalize="none"
+					autoCorrect={false}
+					placeholder="new@email.com"
+					placeholderTextColor={darkMode ? 'rgba(203, 213, 225, 0.45)' : 'rgba(26, 26, 26, 0.4)'}
 					/>
 
-					<Text style={styles.label}>Current Password (required)</Text>
-					<TextInput
-						style={styles.input}
-						value={currentPassword}
-						onChangeText={setCurrentPassword}
-						secureTextEntry
-						autoCapitalize="none"
-						autoCorrect={false}
-						placeholder="Current password"
-						placeholderTextColor="rgba(203, 213, 225, 0.45)"
+				<Text style={[styles.label, { color: textColor }]}>Current Password (required)</Text>
+				<TextInput
+					style={[styles.input, { color: textColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.24)' : 'rgba(212, 175, 55, 0.15)' }]}
+					value={currentPassword}
+					onChangeText={setCurrentPassword}
+					secureTextEntry
+					autoCapitalize="none"
+					autoCorrect={false}
+					placeholder="Current password"
+					placeholderTextColor={darkMode ? 'rgba(203, 213, 225, 0.45)' : 'rgba(26, 26, 26, 0.4)'}
 					/>
 
-					<Text style={styles.label}>New Password</Text>
-					<TextInput
-						style={styles.input}
-						value={newPassword}
-						onChangeText={setNewPassword}
-						secureTextEntry
-						autoCapitalize="none"
-						autoCorrect={false}
-						placeholder="New password"
-						placeholderTextColor="rgba(203, 213, 225, 0.45)"
+				<Text style={[styles.label, { color: textColor }]}>New Password</Text>
+				<TextInput
+					style={[styles.input, { color: textColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.24)' : 'rgba(212, 175, 55, 0.15)' }]}
+					value={newPassword}
+					onChangeText={setNewPassword}
+					secureTextEntry
+					autoCapitalize="none"
+					autoCorrect={false}
+					placeholder="New password"
+					placeholderTextColor={darkMode ? 'rgba(203, 213, 225, 0.45)' : 'rgba(26, 26, 26, 0.4)'}
 					/>
 
-					<Text style={styles.label}>Confirm New Password</Text>
-					<TextInput
-						style={styles.input}
-						value={confirmPassword}
-						onChangeText={setConfirmPassword}
-						secureTextEntry
-						autoCapitalize="none"
-						autoCorrect={false}
-						placeholder="Confirm new password"
-						placeholderTextColor="rgba(203, 213, 225, 0.45)"
+				<Text style={[styles.label, { color: textColor }]}>Confirm New Password</Text>
+				<TextInput
+					style={[styles.input, { color: textColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.24)' : 'rgba(212, 175, 55, 0.15)' }]}
+					value={confirmPassword}
+					onChangeText={setConfirmPassword}
+					secureTextEntry
+					autoCapitalize="none"
+					autoCorrect={false}
+					placeholder="Confirm new password"
+					placeholderTextColor={darkMode ? 'rgba(203, 213, 225, 0.45)' : 'rgba(26, 26, 26, 0.4)'}
 					/>
 
 					<TouchableOpacity
@@ -390,7 +411,7 @@ export default function Settings({ navigation }) {
 				</View>
 			</ScrollView>
 
-			<View style={styles.bottomNav}>
+			<View style={[styles.bottomNav, { backgroundColor: cardBgColor, borderTopColor: darkMode ? 'rgba(212, 175, 55, 0.22)' : 'rgba(212, 175, 55, 0.1)' }]}>
 				{[
 					['view-dashboard-outline', 'Status', false, handleGoStatus],
 					['calendar-check-outline', 'Appointment', false, handleGoAppointment],
@@ -403,8 +424,8 @@ export default function Settings({ navigation }) {
 						activeOpacity={0.85}
 						onPress={onPress || undefined}
 					>
-						<MaterialCommunityIcons name={icon} size={20} color={active ? GOLD : SLATE_300} />
-						<Text style={[styles.navText, active && styles.navTextActive]}>{label}</Text>
+						<MaterialCommunityIcons name={icon} size={20} color={active ? GOLD : secondaryTextColor} />
+						<Text style={[styles.navText, active && styles.navTextActive, !active && { color: secondaryTextColor }]}>{label}</Text>
 					</TouchableOpacity>
 				))}
 			</View>
@@ -463,10 +484,22 @@ const styles = StyleSheet.create({
 		alignItems: 'center',
 		position: 'relative',
 	},
+	darkModeToggle: {
+		width: 38,
+		height: 38,
+		borderRadius: 19,
+		backgroundColor: CARD_BG,
+		borderWidth: 1,
+		borderColor: 'rgba(212, 175, 55, 0.24)',
+		justifyContent: 'center',
+		alignItems: 'center',
+		marginRight: 10,
+	},
 	scroll: {
 		paddingHorizontal: 20,
 		paddingVertical: 16,
 		paddingBottom: 110,
+		backgroundColor: OCEAN_DEEP,
 	},
 	card: {
 		backgroundColor: CARD_BG,

@@ -16,6 +16,7 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { get, push, ref, serverTimestamp, set, update, remove } from 'firebase/database';
 import { signOut } from 'firebase/auth';
 import { auth, database } from '../../lib/firebase';
+import { useTheme } from '../../lib/ThemeContext';
 
 const GOLD = '#D4AF37';
 const OCEAN_DEEP = '#001B2E';
@@ -23,6 +24,12 @@ const CARD_BG = '#0B2740';
 const CARD_ALT_BG = '#12324E';
 const SLATE_100 = '#f1f5f9';
 const SLATE_300 = '#cbd5e1';
+
+// Light mode colors
+const LIGHT_BG = '#f5f5f5';
+const LIGHT_CARD = '#ffffff';
+const LIGHT_TEXT = '#1a1a1a';
+const LIGHT_TEXT_SECONDARY = '#666666';
 
 const formatDateValue = (value) => {
   const year = value.getFullYear();
@@ -50,6 +57,7 @@ export default function ScheduleManager() {
   const NativeDateTimePicker = DateTimePickerModule?.default || null;
 
   const [headerFullName, setHeaderFullName] = React.useState('');
+  const [darkMode, setDarkMode] = React.useState(false);
   const [loading, setLoading] = React.useState(true);
   const [saving, setSaving] = React.useState(false);
   const [schedules, setSchedules] = React.useState([]);
@@ -94,6 +102,16 @@ export default function ScheduleManager() {
       { text: 'Log out', style: 'destructive', onPress: performLogout },
     ]);
   };
+
+  const handleDarkModeToggle = () => {
+    toggleDarkMode();
+  };
+
+  const backgroundColor = darkMode ? OCEAN_DEEP : LIGHT_BG;
+  const headerBgColor = darkMode ? OCEAN_DEEP : LIGHT_BG;
+  const cardBgColor = darkMode ? CARD_BG : LIGHT_CARD;
+  const textColor = darkMode ? SLATE_100 : LIGHT_TEXT;
+  const secondaryTextColor = darkMode ? SLATE_300 : LIGHT_TEXT_SECONDARY;
 
   const loadHeaderName = React.useCallback(async () => {
     const user = auth.currentUser;
@@ -416,23 +434,27 @@ export default function ScheduleManager() {
   const handleGoSettings = () => navigation.replace('AdminSettings');
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <StatusBar style="light" />
+    <SafeAreaView style={[styles.safe, { backgroundColor }]}>
+      <StatusBar barStyle={darkMode ? 'light-content' : 'dark-content'} translucent={true} backgroundColor="transparent" />
 
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor }]}>
         <View style={styles.headerLeft}>
-          <Text style={styles.brand}>Hi, {headerFullName || 'Admin'}</Text>
+          <Text style={[styles.brand, { color: textColor }]}>Hi, {headerFullName || 'Admin'}</Text>
         </View>
 
-        <TouchableOpacity style={styles.notifButton} activeOpacity={0.85} onPress={handleLogout}>
+        <TouchableOpacity style={[styles.darkModeToggle, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleDarkModeToggle}>
+          <MaterialCommunityIcons name={darkMode ? 'white-balance-sunny' : 'moon-waning-crescent'} size={18} color={GOLD} />
+        </TouchableOpacity>
+
+        <TouchableOpacity style={[styles.notifButton, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleLogout}>
           <MaterialCommunityIcons name="logout" size={22} color={GOLD} />
         </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        <Text style={styles.pageTitle}>Schedule Manager</Text>
+      <ScrollView contentContainerStyle={[styles.scroll, { backgroundColor }]} showsVerticalScrollIndicator={false}>
+        <Text style={[styles.pageTitle, { color: textColor }]}>Schedule Manager</Text>
 
-        <View style={styles.tabContainer}>
+        <View style={[styles.tabContainer, { backgroundColor: cardBgColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.16)' : 'rgba(212, 175, 55, 0.08)' }]}>
           <TouchableOpacity
             style={[styles.tabButton, activeTab === 'appointments' && styles.tabButtonActive]}
             activeOpacity={0.85}
@@ -441,9 +463,9 @@ export default function ScheduleManager() {
             <MaterialCommunityIcons
               name="calendar-clock"
               size={16}
-              color={activeTab === 'appointments' ? GOLD : SLATE_300}
+              color={activeTab === 'appointments' ? GOLD : secondaryTextColor}
             />
-            <Text style={[styles.tabLabel, activeTab === 'appointments' && styles.tabLabelActive]}>
+            <Text style={[styles.tabLabel, activeTab === 'appointments' && styles.tabLabelActive, { color: activeTab === 'appointments' ? GOLD : secondaryTextColor }]}>
               Appointment
             </Text>
           </TouchableOpacity>
@@ -456,9 +478,9 @@ export default function ScheduleManager() {
             <MaterialCommunityIcons
               name="cash-multiple"
               size={16}
-              color={activeTab === 'grant' ? GOLD : SLATE_300}
+              color={activeTab === 'grant' ? GOLD : secondaryTextColor}
             />
-            <Text style={[styles.tabLabel, activeTab === 'grant' && styles.tabLabelActive]}>
+            <Text style={[styles.tabLabel, activeTab === 'grant' && styles.tabLabelActive, { color: activeTab === 'grant' ? GOLD : secondaryTextColor }]}>
               Grant Schedule
             </Text>
           </TouchableOpacity>
@@ -466,19 +488,19 @@ export default function ScheduleManager() {
 
         {activeTab === 'appointments' && (
           <>
-            <View style={styles.card}>
-              <Text style={styles.cardTitle}>{editingScheduleId ? 'Update Appointment Schedule' : 'Create Appointment Schedule'}</Text>
+            <View style={[styles.card, { backgroundColor: cardBgColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.18)' : 'rgba(212, 175, 55, 0.08)' }]}>
+              <Text style={[styles.cardTitle, { color: textColor }]}>{editingScheduleId ? 'Update Appointment Schedule' : 'Create Appointment Schedule'}</Text>
 
-          <Text style={styles.label}>Date (YYYY-MM-DD)</Text>
+          <Text style={[styles.label, { color: secondaryTextColor }]}>Date (YYYY-MM-DD)</Text>
           {NativeDateTimePicker ? (
             <>
               <TouchableOpacity
-                style={styles.pickerField}
+                style={[styles.pickerField, { backgroundColor: darkMode ? CARD_ALT_BG : '#f9f9f9', borderColor: darkMode ? 'rgba(212, 175, 55, 0.2)' : 'rgba(212, 175, 55, 0.1)' }]}
                 activeOpacity={0.85}
                 onPress={() => setShowDatePicker(true)}
               >
                 <MaterialCommunityIcons name="calendar-month-outline" size={18} color={GOLD} />
-                <Text style={date ? styles.pickerText : styles.pickerPlaceholder}>
+                <Text style={[date ? styles.pickerText : styles.pickerPlaceholder, { color: date ? textColor : secondaryTextColor }]}>
                   {date || 'Select date'}
                 </Text>
               </TouchableOpacity>
@@ -494,11 +516,11 @@ export default function ScheduleManager() {
             </>
           ) : (
             <TextInput
-              style={styles.input}
+              style={[styles.input, { color: textColor, backgroundColor: darkMode ? CARD_ALT_BG : '#f9f9f9', borderColor: darkMode ? 'rgba(212, 175, 55, 0.2)' : 'rgba(212, 175, 55, 0.1)' }]}
               value={date}
               onChangeText={setDate}
               placeholder="2026-03-24"
-              placeholderTextColor={SLATE_300}
+              placeholderTextColor={secondaryTextColor}
             />
           )}
 
@@ -614,17 +636,17 @@ export default function ScheduleManager() {
                 {saving ? (
                   <ActivityIndicator size="small" color={OCEAN_DEEP} />
                 ) : (
-                  <Text style={styles.primaryButtonText}>{editingScheduleId ? 'UPDATE SCHEDULE' : 'CREATE SCHEDULE'}</Text>
+                  <Text style={[styles.primaryButtonText, { color: darkMode ? OCEAN_DEEP : '#ffffff' }]}>{editingScheduleId ? 'UPDATE SCHEDULE' : 'CREATE SCHEDULE'}</Text>
                 )}
               </TouchableOpacity>
 
               {editingScheduleId ? (
                 <TouchableOpacity
-                  style={styles.secondaryButton}
+                  style={[styles.secondaryButton, { backgroundColor: darkMode ? 'rgba(212, 175, 55, 0.12)' : 'rgba(212, 175, 55, 0.06)' }]}
                   activeOpacity={0.85}
                   onPress={handleCancelEditSchedule}
                 >
-                  <Text style={styles.secondaryButtonText}>CANCEL EDIT</Text>
+                  <Text style={[styles.secondaryButtonText, { color: GOLD }]}>CANCEL EDIT</Text>
                 </TouchableOpacity>
               ) : null}
             </View>
@@ -637,21 +659,21 @@ export default function ScheduleManager() {
                   <ActivityIndicator size="large" color={GOLD} />
                 </View>
               ) : schedules.length === 0 ? (
-                <View style={styles.emptyCard}>
-                  <MaterialCommunityIcons name="calendar-blank-outline" size={42} color={SLATE_300} />
-                  <Text style={styles.emptyTitle}>No schedules yet</Text>
-                  <Text style={styles.emptyText}>Create your first appointment schedule above.</Text>
+                <View style={[styles.emptyCard, { backgroundColor: cardBgColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.16)' : 'rgba(212, 175, 55, 0.08)' }]}>
+                  <MaterialCommunityIcons name="calendar-blank-outline" size={42} color={secondaryTextColor} />
+                  <Text style={[styles.emptyTitle, { color: textColor }]}>No schedules yet</Text>
+                  <Text style={[styles.emptyText, { color: secondaryTextColor }]}>Create your first appointment schedule above.</Text>
                 </View>
               ) : (
                 schedules.map((item) => (
-                  <View key={item.id} style={styles.scheduleItem}>
-                    <View style={styles.scheduleIconWrap}>
+                  <View key={item.id} style={[styles.scheduleItem, { backgroundColor: cardBgColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.16)' : 'rgba(212, 175, 55, 0.08)' }]}>
+                    <View style={[styles.scheduleIconWrap, { backgroundColor: darkMode ? 'rgba(212, 175, 55, 0.12)' : 'rgba(212, 175, 55, 0.06)' }]}>
                       <MaterialCommunityIcons name="calendar-clock" size={18} color={GOLD} />
                     </View>
 
                     <View style={styles.scheduleInfo}>
-                      <Text style={styles.scheduleDate}>{item.date || 'No date'}</Text>
-                      <Text style={styles.scheduleMeta}>
+                      <Text style={[styles.scheduleDate, { color: textColor }]}>{item.date || 'No date'}</Text>
+                      <Text style={[styles.scheduleMeta, { color: secondaryTextColor }]}>
                         {item.startTime || '--'} - {item.endTime || '--'}
                       </Text>
                       <Text style={styles.scheduleMeta}>{item.location || 'No location'}</Text>
@@ -771,39 +793,39 @@ export default function ScheduleManager() {
               {savingGrantSchedule ? (
                 <ActivityIndicator size="small" color={OCEAN_DEEP} />
               ) : (
-                <Text style={styles.primaryButtonText}>SAVE GRANT CLAIMING SCHEDULE</Text>
+                <Text style={[styles.primaryButtonText, { color: darkMode ? OCEAN_DEEP : '#ffffff' }]}>SAVE GRANT CLAIMING SCHEDULE</Text>
               )}
             </TouchableOpacity>
 
             {currentGrantSchedule ? (
-              <View style={styles.grantPreviewCard}>
+              <View style={[styles.grantPreviewCard, { backgroundColor: darkMode ? CARD_ALT_BG : '#f9f9f9', borderColor: darkMode ? 'rgba(212, 175, 55, 0.18)' : 'rgba(212, 175, 55, 0.08)' }]}>
                 <View style={styles.grantPreviewRow}>
                   <View style={styles.grantPreviewInfo}>
-                    <Text style={styles.grantPreviewTitle}>Current Grant Schedule</Text>
-                    <Text style={styles.grantPreviewValue}>
+                    <Text style={[styles.grantPreviewTitle, { color: GOLD }]}>Current Grant Schedule</Text>
+                    <Text style={[styles.grantPreviewValue, { color: textColor }]}>
                       {(currentGrantSchedule?.date || '--')} • {(currentGrantSchedule?.time || '--')}
                     </Text>
-                    <Text style={styles.grantPreviewMeta}>{currentGrantSchedule?.location || 'No location'}</Text>
+                    <Text style={[styles.grantPreviewMeta, { color: secondaryTextColor }]}>{currentGrantSchedule?.location || 'No location'}</Text>
                   </View>
 
                   <View style={styles.grantActionsRight}>
                     <TouchableOpacity
-                      style={styles.grantActionButton}
+                      style={[styles.grantActionButton, { backgroundColor: darkMode ? 'rgba(212, 175, 55, 0.12)' : 'rgba(212, 175, 55, 0.06)' }]}
                       activeOpacity={0.85}
                       disabled={savingGrantSchedule}
                       onPress={handleSaveGrantSchedule}
                     >
                       <MaterialCommunityIcons name="pencil-outline" size={14} color={GOLD} />
-                      <Text style={styles.grantActionText}>Update</Text>
+                      <Text style={[styles.grantActionText, { color: GOLD }]}>Update</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
-                      style={[styles.grantActionButton, styles.grantDeleteButton]}
+                      style={[styles.grantActionButton, styles.grantDeleteButton, { backgroundColor: darkMode ? 'rgba(254,202,202,0.12)' : 'rgba(254,202,202,0.06)' }]}
                       activeOpacity={0.85}
                       onPress={handleDeleteGrantSchedule}
                     >
                       <MaterialCommunityIcons name="trash-can-outline" size={14} color="#fecaca" />
-                      <Text style={[styles.grantActionText, styles.grantDeleteText]}>Delete</Text>
+                      <Text style={[styles.grantActionText, styles.grantDeleteText, { color: '#fecaca' }]}>Delete</Text>
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -813,7 +835,7 @@ export default function ScheduleManager() {
         )}
       </ScrollView>
 
-      <View style={styles.bottomNav}>
+      <View style={[styles.bottomNav, { backgroundColor: cardBgColor, borderTopColor: darkMode ? 'rgba(212, 175, 55, 0.22)' : 'rgba(212, 175, 55, 0.1)' }]}>
         {[
           ['home-outline', 'Home', false, handleGoHome],
           ['account-group-outline', 'Scholars', false, handleGoScholars],
@@ -822,8 +844,8 @@ export default function ScheduleManager() {
           ['cog-outline', 'Settings', false, handleGoSettings],
         ].map(([icon, label, active, onPress]) => (
           <TouchableOpacity key={label} style={styles.navItem} activeOpacity={0.8} onPress={onPress || undefined}>
-            <MaterialCommunityIcons name={icon} size={20} color={active ? GOLD : SLATE_300} />
-            <Text style={[styles.navLabel, active && styles.navLabelActive]}>{label}</Text>
+            <MaterialCommunityIcons name={icon} size={20} color={active ? GOLD : secondaryTextColor} />
+            <Text style={[styles.navLabel, active && styles.navLabelActive, !active && { color: secondaryTextColor }]}>{label}</Text>
           </TouchableOpacity>
         ))}
       </View>
@@ -834,13 +856,11 @@ export default function ScheduleManager() {
 const styles = {
   safe: {
     flex: 1,
-    backgroundColor: OCEAN_DEEP,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: OCEAN_DEEP,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(212, 175, 55, 0.2)',
     paddingHorizontal: 20,
@@ -871,7 +891,6 @@ const styles = {
     paddingBottom: 110,
   },
   pageTitle: {
-    color: SLATE_100,
     fontSize: 22,
     fontWeight: '700',
     marginTop: 12,
@@ -881,7 +900,6 @@ const styles = {
     flexDirection: 'row',
     marginBottom: 14,
     borderRadius: 12,
-    backgroundColor: CARD_BG,
     borderWidth: 1,
     borderColor: 'rgba(212, 175, 55, 0.16)',
     padding: 4,
@@ -901,7 +919,6 @@ const styles = {
     borderColor: 'rgba(212, 175, 55, 0.28)',
   },
   tabLabel: {
-    color: SLATE_300,
     fontSize: 12,
     fontWeight: '700',
   },
@@ -910,7 +927,6 @@ const styles = {
   },
   card: {
     borderRadius: 14,
-    backgroundColor: CARD_BG,
     borderWidth: 1,
     borderColor: 'rgba(212, 175, 55, 0.18)',
     padding: 14,
@@ -919,7 +935,6 @@ const styles = {
     marginTop: 14,
   },
   cardTitle: {
-    color: SLATE_100,
     fontSize: 16,
     fontWeight: '700',
     marginBottom: 10,
@@ -933,7 +948,6 @@ const styles = {
     flex: 1,
   },
   label: {
-    color: SLATE_300,
     fontSize: 12,
     fontWeight: '700',
     marginBottom: 6,
@@ -942,8 +956,6 @@ const styles = {
     borderRadius: 10,
     borderWidth: 1,
     borderColor: 'rgba(212, 175, 55, 0.2)',
-    backgroundColor: CARD_ALT_BG,
-    color: SLATE_100,
     fontSize: 13,
     paddingHorizontal: 10,
     paddingVertical: 10,
@@ -953,7 +965,6 @@ const styles = {
     borderRadius: 10,
     borderWidth: 1,
     borderColor: 'rgba(212, 175, 55, 0.2)',
-    backgroundColor: CARD_ALT_BG,
     paddingHorizontal: 10,
     paddingVertical: 12,
     marginBottom: 10,
@@ -961,13 +972,11 @@ const styles = {
     alignItems: 'center',
   },
   pickerText: {
-    color: SLATE_100,
     fontSize: 13,
     marginLeft: 8,
     fontWeight: '600',
   },
   pickerPlaceholder: {
-    color: SLATE_300,
     fontSize: 13,
     marginLeft: 8,
   },
@@ -987,7 +996,6 @@ const styles = {
     opacity: 0.7,
   },
   primaryButtonText: {
-    color: OCEAN_DEEP,
     fontSize: 13,
     fontWeight: '800',
     letterSpacing: 0.8,
@@ -995,7 +1003,6 @@ const styles = {
   secondaryButton: {
     marginTop: 8,
     borderRadius: 10,
-    backgroundColor: CARD_ALT_BG,
     borderWidth: 1,
     borderColor: 'rgba(212, 175, 55, 0.24)',
     alignItems: 'center',
@@ -1003,7 +1010,6 @@ const styles = {
     paddingVertical: 12,
   },
   secondaryButtonText: {
-    color: SLATE_100,
     fontSize: 12,
     fontWeight: '700',
     letterSpacing: 0.5,
@@ -1014,7 +1020,6 @@ const styles = {
   },
   emptyCard: {
     borderRadius: 14,
-    backgroundColor: CARD_BG,
     borderWidth: 1,
     borderColor: 'rgba(212, 175, 55, 0.16)',
     paddingVertical: 24,
@@ -1022,19 +1027,16 @@ const styles = {
     alignItems: 'center',
   },
   emptyTitle: {
-    color: SLATE_100,
     fontSize: 15,
     fontWeight: '700',
     marginTop: 8,
   },
   emptyText: {
-    color: SLATE_300,
     fontSize: 12,
     marginTop: 4,
   },
   grantPreviewCard: {
     borderRadius: 12,
-    backgroundColor: CARD_ALT_BG,
     borderWidth: 1,
     borderColor: 'rgba(212, 175, 55, 0.18)',
     padding: 12,
@@ -1055,12 +1057,10 @@ const styles = {
     letterSpacing: 0.4,
   },
   grantPreviewValue: {
-    color: SLATE_100,
     fontSize: 14,
     fontWeight: '700',
   },
   grantPreviewMeta: {
-    color: SLATE_300,
     fontSize: 12,
     marginTop: 3,
   },
@@ -1073,7 +1073,6 @@ const styles = {
     borderRadius: 8,
     borderWidth: 1,
     borderColor: 'rgba(212, 175, 55, 0.24)',
-    backgroundColor: CARD_BG,
     paddingHorizontal: 10,
     paddingVertical: 7,
     flexDirection: 'row',
@@ -1081,7 +1080,6 @@ const styles = {
     justifyContent: 'center',
   },
   grantActionText: {
-    color: GOLD,
     fontSize: 11,
     fontWeight: '700',
     marginLeft: 5,
@@ -1089,14 +1087,11 @@ const styles = {
   grantDeleteButton: {
     marginTop: 6,
     borderColor: 'rgba(248, 113, 113, 0.35)',
-    backgroundColor: 'rgba(239, 68, 68, 0.12)',
   },
   grantDeleteText: {
-    color: '#fecaca',
   },
   scheduleItem: {
     borderRadius: 12,
-    backgroundColor: CARD_BG,
     borderWidth: 1,
     borderColor: 'rgba(212, 175, 55, 0.16)',
     padding: 12,
@@ -1108,7 +1103,6 @@ const styles = {
     width: 34,
     height: 34,
     borderRadius: 17,
-    backgroundColor: 'rgba(212, 175, 55, 0.12)',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 10,
@@ -1117,12 +1111,10 @@ const styles = {
     flex: 1,
   },
   scheduleDate: {
-    color: SLATE_100,
     fontSize: 14,
     fontWeight: '700',
   },
   scheduleMeta: {
-    color: SLATE_300,
     fontSize: 12,
     marginTop: 2,
   },
@@ -1138,10 +1130,8 @@ const styles = {
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 8,
     borderWidth: 1,
     borderColor: 'rgba(212, 175, 55, 0.24)',
-    backgroundColor: CARD_ALT_BG,
   },
   itemDeleteIconButton: {
     borderColor: 'rgba(248, 113, 113, 0.35)',
@@ -1154,7 +1144,6 @@ const styles = {
     right: 0,
     bottom: 0,
     height: 84,
-    backgroundColor: CARD_BG,
     borderTopWidth: 1,
     borderColor: 'rgba(212, 175, 55, 0.22)',
     paddingHorizontal: 12,
@@ -1169,12 +1158,17 @@ const styles = {
     alignItems: 'center',
   },
   navLabel: {
-    color: SLATE_300,
     fontSize: 10,
     fontWeight: '600',
     marginTop: 2,
   },
   navLabelActive: {
     color: GOLD,
+  },
+  darkModeToggle: {
+    borderRadius: 8,
+    padding: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 };

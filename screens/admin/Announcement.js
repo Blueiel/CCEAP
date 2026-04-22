@@ -15,6 +15,7 @@ import { useNavigation } from '@react-navigation/native';
 import { ref, get, push, set } from 'firebase/database';
 import { signOut } from 'firebase/auth';
 import { auth, database } from '../../lib/firebase';
+import { useTheme } from '../../lib/ThemeContext';
 
 const GOLD = '#D4AF37';
 const OCEAN_DEEP = '#001B2E';
@@ -23,12 +24,19 @@ const CARD_ALT_BG = '#12324E';
 const SLATE_100 = '#f1f5f9';
 const SLATE_300 = '#cbd5e1';
 
+// Light mode colors
+const LIGHT_BG = '#f5f5f5';
+const LIGHT_CARD = '#ffffff';
+const LIGHT_TEXT = '#1a1a1a';
+const LIGHT_TEXT_SECONDARY = '#666666';
+
 export default function Announcement() {
   const navigation = useNavigation();
   const [headerFullName, setHeaderFullName] = React.useState('');
   const [title, setTitle] = React.useState('');
   const [message, setMessage] = React.useState('');
   const [posting, setPosting] = React.useState(false);
+  const [darkMode, setDarkMode] = React.useState(false);
 
   const performLogout = async () => {
     try {
@@ -115,39 +123,53 @@ export default function Announcement() {
   const handleGoAlerts = () => navigation.replace('Alerts');
   const handleGoSettings = () => navigation.replace('AdminSettings');
 
-  return (
-    <SafeAreaView style={styles.safe}>
-      <StatusBar style="light" />
+  const handleDarkModeToggle = () => {
+    setDarkMode(!darkMode);
+  };
 
-      <View style={styles.header}>
+  const backgroundColor = darkMode ? OCEAN_DEEP : LIGHT_BG;
+  const headerBgColor = darkMode ? OCEAN_DEEP : LIGHT_BG;
+  const cardBgColor = darkMode ? CARD_BG : LIGHT_CARD;
+  const textColor = darkMode ? SLATE_100 : LIGHT_TEXT;
+  const secondaryTextColor = darkMode ? SLATE_300 : LIGHT_TEXT_SECONDARY;
+
+  return (
+    <SafeAreaView style={[styles.safe, { backgroundColor }]}>
+      <StatusBar barStyle={darkMode ? 'light-content' : 'dark-content'} translucent={true} backgroundColor="transparent" />
+
+      <View style={[styles.header, { backgroundColor: headerBgColor }]}>
         <View style={styles.headerLeft}>
-          <Text style={styles.brand}>Hi, {headerFullName || 'Admin'}</Text>
+          <Text style={[styles.brand, { color: textColor }]}>Hi, {headerFullName || 'Admin'}</Text>
         </View>
 
-        <TouchableOpacity style={styles.notifButton} activeOpacity={0.85} onPress={handleLogout}>
+        <TouchableOpacity style={[styles.darkModeToggle, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleDarkModeToggle}>
+          <MaterialCommunityIcons name={darkMode ? 'white-balance-sunny' : 'moon-waning-crescent'} size={18} color={GOLD} />
+        </TouchableOpacity>
+
+        <TouchableOpacity style={[styles.notifButton, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleLogout}>
           <MaterialCommunityIcons name="logout" size={22} color={GOLD} />
         </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        <Text style={styles.pageTitle}>Post Announcement</Text>
+      <ScrollView contentContainerStyle={[styles.scroll, { backgroundColor }]} showsVerticalScrollIndicator={false}>
+        <Text style={[styles.pageTitle, { color: textColor }]}>Post Announcement</Text>
 
-        <View style={styles.card}>
-          <Text style={styles.label}>Title</Text>
+        <View style={[styles.card, { backgroundColor: cardBgColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.18)' : 'rgba(212, 175, 55, 0.1)' }]}>
+          <Text style={[styles.label, { color: textColor }]}>Title</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { backgroundColor: darkMode ? CARD_ALT_BG : 'rgba(212, 175, 55, 0.05)', color: textColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.2)' : 'rgba(212, 175, 55, 0.15)' }]}
             placeholder="Enter announcement title"
-            placeholderTextColor={SLATE_300}
+            placeholderTextColor={darkMode ? 'rgba(203, 213, 225, 0.45)' : 'rgba(26, 26, 26, 0.4)'}
             value={title}
             onChangeText={setTitle}
             editable={!posting}
           />
 
-          <Text style={styles.label}>Message</Text>
+          <Text style={[styles.label, { color: textColor }]}>Message</Text>
           <TextInput
-            style={[styles.input, styles.textArea]}
+            style={[styles.input, styles.textArea, { backgroundColor: darkMode ? CARD_ALT_BG : 'rgba(212, 175, 55, 0.05)', color: textColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.2)' : 'rgba(212, 175, 55, 0.15)' }]}
             placeholder="Write your announcement here"
-            placeholderTextColor={SLATE_300}
+            placeholderTextColor={darkMode ? 'rgba(203, 213, 225, 0.45)' : 'rgba(26, 26, 26, 0.4)'}
             multiline
             textAlignVertical="top"
             value={message}
@@ -170,7 +192,7 @@ export default function Announcement() {
         </View>
       </ScrollView>
 
-      <View style={styles.bottomNav}>
+      <View style={[styles.bottomNav, { backgroundColor: cardBgColor, borderTopColor: darkMode ? 'rgba(212, 175, 55, 0.22)' : 'rgba(212, 175, 55, 0.1)' }]}>
         {[
           ['home-outline', 'Home', false, handleGoHome],
           ['account-group-outline', 'Scholars', false, handleGoScholars],
@@ -184,8 +206,8 @@ export default function Announcement() {
             activeOpacity={0.8}
             onPress={onPress || undefined}
           >
-            <MaterialCommunityIcons name={icon} size={20} color={active ? GOLD : SLATE_300} />
-            <Text style={[styles.navLabel, active && styles.navLabelActive]}>{label}</Text>
+            <MaterialCommunityIcons name={icon} size={20} color={active ? GOLD : secondaryTextColor} />
+            <Text style={[styles.navLabel, active && styles.navLabelActive, !active && { color: secondaryTextColor }]}>{label}</Text>
           </TouchableOpacity>
         ))}
       </View>
@@ -197,6 +219,17 @@ const styles = {
   safe: {
     flex: 1,
     backgroundColor: OCEAN_DEEP,
+  },
+  darkModeToggle: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: CARD_BG,
+    borderWidth: 1,
+    borderColor: 'rgba(212, 175, 55, 0.24)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
   },
   header: {
     flexDirection: 'row',
@@ -232,6 +265,7 @@ const styles = {
     paddingHorizontal: 20,
     paddingTop: 16,
     paddingBottom: 110,
+    backgroundColor: OCEAN_DEEP,
   },
   pageTitle: {
     color: SLATE_100,

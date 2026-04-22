@@ -16,6 +16,7 @@ import { ref, get } from 'firebase/database';
 import { signOut } from 'firebase/auth';
 import { database } from '../../lib/firebase';
 import { auth } from '../../lib/firebase';
+import { useTheme } from '../../lib/ThemeContext';
 
 const GOLD = '#D4AF37';
 const OCEAN_DEEP = '#001B2E';
@@ -23,6 +24,13 @@ const CARD_BG = '#0B2740';
 const CARD_ALT_BG = '#12324E';
 const SLATE_100 = '#f1f5f9';
 const SLATE_300 = '#cbd5e1';
+
+// Light mode colors
+const LIGHT_BG = '#f5f5f5';
+const LIGHT_CARD = '#ffffff';
+const LIGHT_TEXT = '#1a1a1a';
+const LIGHT_TEXT_SECONDARY = '#666666';
+
 const REQUIREMENT_IDS = ['1', '2', '3', '4'];
 
 const topStats = [
@@ -41,19 +49,16 @@ const scholarManagement = [
 
 const cashierActions = [
   { id: '1', icon: 'point-of-sale', label: 'Cashier Setup' },
-  { id: '2', icon: 'monitor-dashboard', label: 'Queue Monitor' },
-  { id: '3', icon: 'printer-outline', label: 'Print Roster' },
-  { id: '4', icon: 'cash-check', label: 'Claiming Logs' },
+  { id: '2', icon: 'printer-outline', label: 'Print Roster' },
 ];
 
 const quickActions = [
   { id: '1', icon: 'bullhorn-outline', label: 'Post announcement' },
-  { id: '2', icon: 'cellphone-message', label: 'Send SMS advisory' },
-  { id: '3', icon: 'file-document-outline', label: 'Reports & Export' },
 ];
 
 export default function AdminDashboard() {
   const navigation = useNavigation();
+  const { darkMode, toggleDarkMode } = useTheme();
   const [totalScholars, setTotalScholars] = React.useState('0');
   const [verifiedScholars, setVerifiedScholars] = React.useState('0');
   const [headerFullName, setHeaderFullName] = React.useState('');
@@ -158,6 +163,16 @@ export default function AdminDashboard() {
     ]);
   };
 
+  const handleDarkModeToggle = () => {
+    toggleDarkMode();
+  };
+
+  const backgroundColor = darkMode ? OCEAN_DEEP : LIGHT_BG;
+  const headerBgColor = darkMode ? OCEAN_DEEP : LIGHT_BG;
+  const cardBgColor = darkMode ? CARD_BG : LIGHT_CARD;
+  const textColor = darkMode ? SLATE_100 : LIGHT_TEXT;
+  const secondaryTextColor = darkMode ? SLATE_300 : LIGHT_TEXT_SECONDARY;
+
   React.useEffect(() => {
     const loadAdminName = async () => {
       const user = auth.currentUser;
@@ -224,41 +239,45 @@ export default function AdminDashboard() {
   const handleGoSettings = () => navigation.replace('AdminSettings');
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <StatusBar style="light" />
+    <SafeAreaView style={[styles.safe, { backgroundColor }]}>
+      <StatusBar barStyle={darkMode ? 'light-content' : 'dark-content'} translucent={true} backgroundColor="transparent" />
 
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: headerBgColor }]}>
         <View style={styles.headerLeft}>
-          <Text style={styles.brand}>Hi, {headerFullName || 'Admin'}</Text>
+          <Text style={[styles.brand, { color: textColor }]}>Hi, {headerFullName || 'Admin'}</Text>
         </View>
 
-        <TouchableOpacity style={styles.notifButton} activeOpacity={0.85} onPress={handleLogout}>
+        <TouchableOpacity style={[styles.darkModeToggle, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleDarkModeToggle}>
+          <MaterialCommunityIcons name={darkMode ? 'white-balance-sunny' : 'moon-waning-crescent'} size={18} color={GOLD} />
+        </TouchableOpacity>
+
+        <TouchableOpacity style={[styles.notifButton, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleLogout}>
           <MaterialCommunityIcons name="logout" size={22} color={GOLD} />
         </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={[styles.scroll, { backgroundColor }]} showsVerticalScrollIndicator={false}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.statsRow}>
           {topStats.map((item) => (
-            <View key={item.id} style={styles.statCard}>
+            <View key={item.id} style={[styles.statCard, { backgroundColor: cardBgColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.18)' : 'rgba(212, 175, 55, 0.1)' }]}>
               <View style={styles.statIconWrap}>
                 <MaterialCommunityIcons name={item.icon} size={20} color={GOLD} />
               </View>
-              <Text style={styles.statValue}>
+              <Text style={[styles.statValue, { color: textColor }]}>
                 {item.id === '1' ? totalScholars : item.id === '2' ? verifiedScholars : item.value}
               </Text>
-              <Text style={styles.statLabel}>{item.label}</Text>
+              <Text style={[styles.statLabel, { color: secondaryTextColor }]}>{item.label}</Text>
             </View>
           ))}
         </ScrollView>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Scholar Management</Text>
+          <Text style={[styles.sectionTitle, { color: textColor }]}>Scholar Management</Text>
           <View style={styles.grid}>
             {scholarManagement.map((item) => (
               <TouchableOpacity
                 key={item.id}
-                style={styles.gridCard}
+                style={[styles.gridCard, { backgroundColor: cardBgColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.18)' : 'rgba(212, 175, 55, 0.1)' }]}
                 activeOpacity={0.85}
                 onPress={
                   item.id === '1'
@@ -277,31 +296,31 @@ export default function AdminDashboard() {
                   size={22}
                   color={GOLD}
                 />
-                <Text style={styles.gridTitle}>{item.title}</Text>
-                <Text style={styles.gridSubtitle}>{item.subtitle}</Text>
+                <Text style={[styles.gridTitle, { color: textColor }]}>{item.title}</Text>
+                <Text style={[styles.gridSubtitle, { color: secondaryTextColor }]}>{item.subtitle}</Text>
               </TouchableOpacity>
             ))}
           </View>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Cashier & Claiming</Text>
+          <Text style={[styles.sectionTitle, { color: textColor }]}>Cashier & Claiming</Text>
           <View style={styles.grid}>
             {cashierActions.map((item) => (
               <TouchableOpacity
                 key={item.id}
-                style={styles.softCard}
+                style={[styles.softCard, { backgroundColor: cardBgColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.16)' : 'rgba(212, 175, 55, 0.08)' }]}
                 activeOpacity={0.85}
                 onPress={
                   item.id === '1'
                     ? handleCashierSetupPress
-                    : item.id === '3'
+                    : item.id === '2'
                     ? handlePrintRosterPress
                     : undefined
                 }
               >
                 <MaterialCommunityIcons name={item.icon} size={20} color={GOLD} />
-                <Text style={styles.softCardText}>{item.label}</Text>
+                <Text style={[styles.softCardText, { color: textColor }]}>{item.label}</Text>
               </TouchableOpacity>
             ))}
           </View>
@@ -309,68 +328,68 @@ export default function AdminDashboard() {
 
         <View style={styles.section}>
           <View style={styles.sectionHeaderRow}>
-            <Text style={styles.sectionTitle}>Scholars by School</Text>
+            <Text style={[styles.sectionTitle, { color: textColor }]}>Scholars by School</Text>
             <TouchableOpacity activeOpacity={0.8} onPress={() => handleScholarRegistryPress()}>
               <Text style={styles.viewAll}>View All</Text>
             </TouchableOpacity>
           </View>
 
           {schools.length === 0 ? (
-            <View style={styles.schoolItem}>
+            <View style={[styles.schoolItem, { backgroundColor: cardBgColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.16)' : 'rgba(212, 175, 55, 0.08)' }]}>
               <View style={styles.schoolLeft}>
                 <View style={styles.schoolIconWrap}>
-                  <MaterialCommunityIcons name="school-outline" size={20} color={SLATE_300} />
+                  <MaterialCommunityIcons name="school-outline" size={20} color={secondaryTextColor} />
                 </View>
                 <View>
-                  <Text style={styles.schoolName}>No scholar records</Text>
-                  <Text style={styles.schoolCount}>0 Scholars</Text>
+                  <Text style={[styles.schoolName, { color: textColor }]}>No scholar records</Text>
+                  <Text style={[styles.schoolCount, { color: secondaryTextColor }]}>0 Scholars</Text>
                 </View>
               </View>
-              <MaterialCommunityIcons name="chevron-right" size={20} color={SLATE_300} />
+              <MaterialCommunityIcons name="chevron-right" size={20} color={secondaryTextColor} />
             </View>
           ) : (
             schools.map((school) => (
               <TouchableOpacity
                 key={school.id}
-                style={styles.schoolItem}
+                style={[styles.schoolItem, { backgroundColor: cardBgColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.16)' : 'rgba(212, 175, 55, 0.08)' }]}
                 activeOpacity={0.85}
                 onPress={() => handleScholarRegistryPress(school.name)}
               >
                 <View style={styles.schoolLeft}>
                   <View style={styles.schoolIconWrap}>
-                    <MaterialCommunityIcons name="school-outline" size={20} color={SLATE_300} />
+                    <MaterialCommunityIcons name="school-outline" size={20} color={secondaryTextColor} />
                   </View>
                   <View>
-                    <Text style={styles.schoolName}>{school.name}</Text>
-                    <Text style={styles.schoolCount}>{school.count}</Text>
+                    <Text style={[styles.schoolName, { color: textColor }]}>{school.name}</Text>
+                    <Text style={[styles.schoolCount, { color: secondaryTextColor }]}>{school.count}</Text>
                   </View>
                 </View>
-                <MaterialCommunityIcons name="chevron-right" size={20} color={SLATE_300} />
+                <MaterialCommunityIcons name="chevron-right" size={20} color={secondaryTextColor} />
               </TouchableOpacity>
             ))
           )}
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Quick Actions</Text>
+          <Text style={[styles.sectionTitle, { color: textColor }]}>Quick Action</Text>
           {quickActions.map((item) => (
             <TouchableOpacity
               key={item.id}
-              style={styles.actionItem}
+              style={[styles.actionItem, { backgroundColor: cardBgColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.16)' : 'rgba(212, 175, 55, 0.08)' }]}
               activeOpacity={0.85}
               onPress={item.id === '1' ? handleAnnouncementPress : undefined}
             >
               <View style={styles.actionIconWrap}>
                 <MaterialCommunityIcons name={item.icon} size={18} color={GOLD} />
               </View>
-              <Text style={styles.actionLabel}>{item.label}</Text>
-              <MaterialCommunityIcons name="chevron-right" size={20} color={SLATE_300} />
+              <Text style={[styles.actionLabel, { color: textColor }]}>{item.label}</Text>
+              <MaterialCommunityIcons name="chevron-right" size={20} color={secondaryTextColor} />
             </TouchableOpacity>
           ))}
         </View>
       </ScrollView>
 
-      <View style={styles.bottomNav}>
+      <View style={[styles.bottomNav, { backgroundColor: cardBgColor, borderTopColor: darkMode ? 'rgba(212, 175, 55, 0.22)' : 'rgba(212, 175, 55, 0.1)' }]}>
         {[
           ['home-outline', 'Home', true],
           ['account-group-outline', 'Scholars', false, handleGoScholars],
@@ -379,8 +398,8 @@ export default function AdminDashboard() {
           ['cog-outline', 'Settings', false, handleGoSettings],
         ].map(([icon, label, active, onPress]) => (
           <TouchableOpacity key={label} style={styles.navItem} activeOpacity={0.8} onPress={onPress || undefined}>
-            <MaterialCommunityIcons name={icon} size={20} color={active ? GOLD : SLATE_300} />
-            <Text style={[styles.navLabel, active && styles.navLabelActive]}>{label}</Text>
+            <MaterialCommunityIcons name={icon} size={20} color={active ? GOLD : secondaryTextColor} />
+            <Text style={[styles.navLabel, active && styles.navLabelActive, !active && { color: secondaryTextColor }]}>{label}</Text>
           </TouchableOpacity>
         ))}
       </View>
@@ -392,6 +411,17 @@ const styles = StyleSheet.create({
   safe: {
     flex: 1,
     backgroundColor: OCEAN_DEEP,
+  },
+  darkModeToggle: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: CARD_BG,
+    borderWidth: 1,
+    borderColor: 'rgba(212, 175, 55, 0.24)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
   },
   header: {
     flexDirection: 'row',
@@ -413,6 +443,17 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: 0.2,
   },
+  darkModeToggle: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: CARD_BG,
+    borderWidth: 1,
+    borderColor: 'rgba(212, 175, 55, 0.24)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+  },
   notifButton: {
     width: 38,
     height: 38,
@@ -426,6 +467,7 @@ const styles = StyleSheet.create({
   scroll: {
     paddingHorizontal: 20,
     paddingBottom: 110,
+    backgroundColor: OCEAN_DEEP,
   },
   statsRow: {
     paddingTop: 6,

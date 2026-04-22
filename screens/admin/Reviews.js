@@ -23,6 +23,12 @@ const GOLD = '#D4AF37';
 const SLATE_100 = '#f1f5f9';
 const SLATE_300 = '#cbd5e1';
 
+// Light mode colors
+const LIGHT_BG = '#f5f5f5';
+const LIGHT_CARD = '#ffffff';
+const LIGHT_TEXT = '#1a1a1a';
+const LIGHT_TEXT_SECONDARY = '#666666';
+
 const DEFAULT_REQUIREMENTS_CHECKLIST = [
 	{
 		id: '1',
@@ -57,6 +63,7 @@ const normalizeRequirement = (item, index) => ({
 export default function Reviews() {
 	const navigation = useNavigation();
 	const [headerFullName, setHeaderFullName] = React.useState('');
+	const [darkMode, setDarkMode] = React.useState(false);
 	const [schools, setSchools] = React.useState([]);
 	const [requirementsChecklist, setRequirementsChecklist] = React.useState(
 		DEFAULT_REQUIREMENTS_CHECKLIST.map((item, index) => normalizeRequirement(item, index))
@@ -83,6 +90,16 @@ export default function Reviews() {
 			{ text: 'Log out', style: 'destructive', onPress: performLogout },
 		]);
 	};
+
+	const handleDarkModeToggle = () => {
+		toggleDarkMode();
+	};
+
+	const backgroundColor = darkMode ? OCEAN_DEEP : LIGHT_BG;
+	const headerBgColor = darkMode ? OCEAN_DEEP : LIGHT_BG;
+	const cardBgColor = darkMode ? CARD_BG : LIGHT_CARD;
+	const textColor = darkMode ? SLATE_100 : LIGHT_TEXT;
+	const secondaryTextColor = darkMode ? SLATE_300 : LIGHT_TEXT_SECONDARY;
 
 	const loadScholars = React.useCallback(async () => {
 		try {
@@ -294,14 +311,14 @@ export default function Reviews() {
 
 	if (loading) {
 		return (
-			<SafeAreaView style={styles.safe}>
-				<StatusBar style="light" />
-				<View style={styles.header}>
+			<SafeAreaView style={[styles.safe, { backgroundColor }]}>
+				<StatusBar barStyle={darkMode ? 'light-content' : 'dark-content'} translucent={true} backgroundColor="transparent" />
+				<View style={[styles.header, { backgroundColor }]}>
 					<View style={styles.headerLeft}>
-						<Text style={styles.brand}>Hi, {headerFullName || 'Admin'}</Text>
+						<Text style={[styles.brand, { color: textColor }]}>Hi, {headerFullName || 'Admin'}</Text>
 					</View>
 
-					<TouchableOpacity style={styles.notifButton} activeOpacity={0.85} onPress={handleLogout}>
+					<TouchableOpacity style={[styles.notifButton, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleLogout}>
 						<MaterialCommunityIcons name="logout" size={22} color={GOLD} />
 					</TouchableOpacity>
 				</View>
@@ -313,32 +330,34 @@ export default function Reviews() {
 	}
 
 	return (
-		<SafeAreaView style={styles.safe}>
-			<StatusBar style="light" />
-			<View style={styles.header}>
+		<SafeAreaView style={[styles.safe, { backgroundColor }]}>
+			<StatusBar barStyle={darkMode ? 'light-content' : 'dark-content'} translucent={true} backgroundColor="transparent" />
+			<View style={[styles.header, { backgroundColor }]}>
 				<View style={styles.headerLeft}>
-					<Text style={styles.brand}>Hi, {headerFullName || 'Admin'}</Text>
+					<Text style={[styles.brand, { color: textColor }]}>Hi, {headerFullName || 'Admin'}</Text>
 				</View>
-
-				<TouchableOpacity style={styles.notifButton} activeOpacity={0.85} onPress={handleLogout}>
+			<TouchableOpacity style={[styles.darkModeToggle, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleDarkModeToggle}>
+				<MaterialCommunityIcons name={darkMode ? 'white-balance-sunny' : 'moon-waning-crescent'} size={18} color={GOLD} />
+			</TouchableOpacity>
+				<TouchableOpacity style={[styles.notifButton, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleLogout}>
 					<MaterialCommunityIcons name="logout" size={22} color={GOLD} />
 				</TouchableOpacity>
 			</View>
 
 			<ScrollView
-				style={styles.content}
+				style={[styles.content, { backgroundColor }]}
 				showsVerticalScrollIndicator={false}
-				contentContainerStyle={{ paddingBottom: 110 }}
+				contentContainerStyle={{ paddingBottom: 110, backgroundColor }}
 			>
 				{schools.length === 0 ? (
 					<View style={styles.emptyContainer}>
-						<MaterialCommunityIcons name="information-outline" size={50} color={SLATE_300} />
-						<Text style={styles.emptyText}>No scholars found</Text>
+						<MaterialCommunityIcons name="information-outline" size={50} color={secondaryTextColor} />
+						<Text style={[styles.emptyText, { color: secondaryTextColor }]}>No scholars found</Text>
 					</View>
 				) : (
 					schools.map((school) => (
-						<View key={school.name} style={styles.schoolContainer}>
-							<TouchableOpacity style={styles.schoolHeader} onPress={() => toggleSchool(school.name)}>
+						<View key={school.name} style={[styles.schoolContainer, { backgroundColor: cardBgColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.16)' : 'rgba(212, 175, 55, 0.08)' }]}>
+							<TouchableOpacity style={[styles.schoolHeader, { backgroundColor: cardBgColor }]} onPress={() => toggleSchool(school.name)}>
 								<View style={styles.schoolLeftContent}>
 									<MaterialCommunityIcons
 										name={expandedSchools[school.name] ? 'chevron-down' : 'chevron-right'}
@@ -346,8 +365,8 @@ export default function Reviews() {
 										color={GOLD}
 									/>
 									<View style={styles.schoolInfo}>
-										<Text style={styles.schoolName}>{school.name}</Text>
-										<Text style={styles.scholarCount}>
+										<Text style={[styles.schoolName, { color: textColor }]}>{school.name}</Text>
+										<Text style={[styles.scholarCount, { color: secondaryTextColor }]}>
 											{school.count} {school.count === 1 ? 'scholar' : 'scholars'}
 										</Text>
 									</View>
@@ -358,7 +377,7 @@ export default function Reviews() {
 							</TouchableOpacity>
 
 							{expandedSchools[school.name] && (
-								<View style={styles.scholarsListContainer}>
+										<View style={[styles.scholarsListContainer, { backgroundColor: darkMode ? CARD_ALT_BG : 'rgba(212, 175, 55, 0.05)' }]}>
 									{school.scholars.map((scholar, scholIndex) => {
 										const isExpanded = !!expandedScholars[scholar.uid];
 										const isComplete =
@@ -465,7 +484,7 @@ export default function Reviews() {
 				)}
 			</ScrollView>
 
-			<View style={styles.bottomNav}>
+			<View style={[styles.bottomNav, { backgroundColor: cardBgColor, borderTopColor: darkMode ? 'rgba(212, 175, 55, 0.22)' : 'rgba(212, 175, 55, 0.1)' }]}>
 				{[
 					['home-outline', 'Home', false, handleGoHome],
 					['account-group-outline', 'Scholars', false, handleGoScholars],
@@ -479,8 +498,8 @@ export default function Reviews() {
 						activeOpacity={0.8}
 						onPress={onPress || undefined}
 					>
-						<MaterialCommunityIcons name={icon} size={20} color={active ? GOLD : SLATE_300} />
-						<Text style={[styles.navLabel, active && styles.navLabelActive]}>{label}</Text>
+						<MaterialCommunityIcons name={icon} size={20} color={active ? GOLD : secondaryTextColor} />
+						<Text style={[styles.navLabel, active && styles.navLabelActive, !active && { color: secondaryTextColor }]}>{label}</Text>
 					</TouchableOpacity>
 				))}
 			</View>
@@ -754,5 +773,11 @@ const styles = {
 	},
 	navLabelActive: {
 		color: GOLD,
+	},
+	darkModeToggle: {
+		borderRadius: 8,
+		padding: 8,
+		justifyContent: 'center',
+		alignItems: 'center',
 	},
 };

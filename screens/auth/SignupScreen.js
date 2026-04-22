@@ -19,8 +19,15 @@ import { auth, database } from '../../lib/firebase';
 
 const GOLD = '#D4AF37';
 const OCEAN_DEEP = '#001B2E';
+const CARD_BG = '#003550';
 const SLATE_300 = '#cbd5e1';
 const SLATE_100 = '#f1f5f9';
+
+// Light mode colors
+const LIGHT_BG = '#f5f5f5';
+const LIGHT_CARD = '#ffffff';
+const LIGHT_TEXT = '#1a1a1a';
+const LIGHT_TEXT_SECONDARY = '#666666';
 const PICKER_OPTION_COLOR = Platform.OS === 'android' ? OCEAN_DEEP : SLATE_100;
 const PICKER_PLACEHOLDER_COLOR = Platform.OS === 'android' ? '#64748b' : SLATE_300;
 
@@ -50,11 +57,22 @@ export default function SignupScreen({ navigation }) {
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [confirmPassword, setConfirmPassword] = React.useState('');
+  const [darkMode, setDarkMode] = React.useState(false);
   const [schoolOptions, setSchoolOptions] = React.useState([]);
   const [loadingSchools, setLoadingSchools] = React.useState(true);
   const [showPassword, setShowPassword] = React.useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+
+  const handleDarkModeToggle = () => {
+    toggleDarkMode();
+  };
+
+  const backgroundColor = darkMode ? OCEAN_DEEP : LIGHT_BG;
+  const headerBgColor = darkMode ? OCEAN_DEEP : LIGHT_BG;
+  const cardBgColor = darkMode ? CARD_BG : LIGHT_CARD;
+  const textColor = darkMode ? SLATE_100 : LIGHT_TEXT;
+  const secondaryTextColor = darkMode ? SLATE_300 : LIGHT_TEXT_SECONDARY;
 
   React.useEffect(() => {
     const loadSchoolOptions = async () => {
@@ -165,12 +183,12 @@ export default function SignupScreen({ navigation }) {
   };
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="light-content" backgroundColor={OCEAN_DEEP} />
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+    <SafeAreaView style={[styles.safe, { backgroundColor }]}>
+      <StatusBar barStyle={darkMode ? 'light-content' : 'dark-content'} translucent={true} backgroundColor="transparent" />
+      <ScrollView contentContainerStyle={[styles.scroll, { backgroundColor }]} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation?.goBack()}>
-            <MaterialCommunityIcons name="arrow-left" size={28} color={SLATE_100} />
+            <MaterialCommunityIcons name="arrow-left" size={28} color={textColor} />
           </TouchableOpacity>
           <View style={styles.logoContainer}>
             <MaterialCommunityIcons name="school" size={32} color={GOLD} />
@@ -178,17 +196,17 @@ export default function SignupScreen({ navigation }) {
         </View>
 
         <View style={styles.container}>
-          <Text style={styles.title}>Create Account</Text>
-          <Text style={styles.subtitle}>Join Scholar and track your academic journey</Text>
+          <Text style={[styles.title, { color: textColor }]}>Create Account</Text>
+          <Text style={[styles.subtitle, { color: secondaryTextColor }]}>Join Scholar and track your academic journey</Text>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>First Name</Text>
-            <View style={styles.inputContainer}>
+            <Text style={[styles.label, { color: textColor }]}>First Name</Text>
+            <View style={[styles.inputContainer, { borderColor: darkMode ? 'rgba(212, 175, 55, 0.2)' : 'rgba(212, 175, 55, 0.15)' }]}>
               <MaterialCommunityIcons name="account-outline" size={20} color={GOLD} />
               <TextInput
-                style={styles.input}
+                style={[styles.input, { color: textColor }]}
                 placeholder="John"
-                placeholderTextColor="rgba(203, 213, 225, 0.5)"
+                placeholderTextColor={darkMode ? 'rgba(203, 213, 225, 0.5)' : 'rgba(26, 26, 26, 0.4)'}
                 value={firstName}
                 onChangeText={setFirstName}
               />
@@ -196,13 +214,13 @@ export default function SignupScreen({ navigation }) {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Middle Name</Text>
-            <View style={styles.inputContainer}>
+            <Text style={[styles.label, { color: textColor }]}>Middle Name</Text>
+            <View style={[styles.inputContainer, { borderColor: darkMode ? 'rgba(212, 175, 55, 0.2)' : 'rgba(212, 175, 55, 0.15)' }]}>
               <MaterialCommunityIcons name="account-outline" size={20} color={GOLD} />
               <TextInput
-                style={styles.input}
+                style={[styles.input, { color: textColor }]}
                 placeholder="Michael (optional)"
-                placeholderTextColor="rgba(203, 213, 225, 0.5)"
+                placeholderTextColor={darkMode ? 'rgba(203, 213, 225, 0.5)' : 'rgba(26, 26, 26, 0.4)'}
                 value={middleName}
                 onChangeText={setMiddleName}
               />
@@ -210,13 +228,13 @@ export default function SignupScreen({ navigation }) {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Last Name</Text>
-            <View style={styles.inputContainer}>
+            <Text style={[styles.label, { color: textColor }]}>Last Name</Text>
+            <View style={[styles.inputContainer, { borderColor: darkMode ? 'rgba(212, 175, 55, 0.2)' : 'rgba(212, 175, 55, 0.15)' }]}>
               <MaterialCommunityIcons name="account-outline" size={20} color={GOLD} />
               <TextInput
-                style={styles.input}
+                style={[styles.input, { color: textColor }]}
                 placeholder="Doe"
-                placeholderTextColor="rgba(203, 213, 225, 0.5)"
+                placeholderTextColor={darkMode ? 'rgba(203, 213, 225, 0.5)' : 'rgba(26, 26, 26, 0.4)'}
                 value={lastName}
                 onChangeText={setLastName}
               />
@@ -224,62 +242,62 @@ export default function SignupScreen({ navigation }) {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>School</Text>
-            <View style={styles.pickerWrapper}>
+            <Text style={[styles.label, { color: textColor }]}>School</Text>
+            <View style={[styles.pickerWrapper, { borderColor: darkMode ? 'rgba(212, 175, 55, 0.2)' : 'rgba(212, 175, 55, 0.15)' }]}>
               <MaterialCommunityIcons name="school-outline" size={20} color={GOLD} style={styles.pickerIconLeft} />
               <Picker
                 selectedValue={school}
                 onValueChange={setSchool}
-                style={styles.picker}
+                style={[styles.picker, { color: textColor }]}
                 dropdownIconColor={GOLD}
                 mode="dropdown"
-                itemStyle={styles.pickerItem}
+                itemStyle={[styles.pickerItem, { color: darkMode ? SLATE_100 : LIGHT_TEXT }]}
               >
                 <Picker.Item
                   label={loadingSchools ? 'Loading schools...' : schoolOptions.length ? 'Select School' : 'No schools available'}
                   value=""
-                  color={PICKER_PLACEHOLDER_COLOR}
+                  color={darkMode ? SLATE_300 : LIGHT_TEXT_SECONDARY}
                 />
                 {schoolOptions.map((schoolName) => (
-                  <Picker.Item key={schoolName} label={schoolName} value={schoolName} color={PICKER_OPTION_COLOR} />
+                  <Picker.Item key={schoolName} label={schoolName} value={schoolName} color={darkMode ? SLATE_100 : LIGHT_TEXT} />
                 ))}
               </Picker>
             </View>
             {!loadingSchools && schoolOptions.length === 0 ? (
-              <Text style={styles.helperText}>No school options yet. Please contact admin.</Text>
+              <Text style={[styles.helperText, { color: secondaryTextColor }]}>No school options yet. Please contact admin.</Text>
             ) : null}
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Year Level</Text>
-            <View style={styles.pickerWrapper}>
+            <Text style={[styles.label, { color: textColor }]}>Year Level</Text>
+            <View style={[styles.pickerWrapper, { borderColor: darkMode ? 'rgba(212, 175, 55, 0.2)' : 'rgba(212, 175, 55, 0.15)' }]}>
               <MaterialCommunityIcons name="clipboard-outline" size={20} color={GOLD} style={styles.pickerIconLeft} />
               <Picker
                 selectedValue={yearLevel}
                 onValueChange={setYearLevel}
-                style={styles.picker}
+                style={[styles.picker, { color: textColor }]}
                 dropdownIconColor={GOLD}
                 mode="dropdown"
-                itemStyle={styles.pickerItem}
+                itemStyle={[styles.pickerItem, { color: darkMode ? SLATE_100 : LIGHT_TEXT }]}
               >
-                <Picker.Item label="Select Year Level" value="" color={PICKER_PLACEHOLDER_COLOR} />
-                <Picker.Item label="1st Year" value="1st Year" color={PICKER_OPTION_COLOR} />
-                <Picker.Item label="2nd Year" value="2nd Year" color={PICKER_OPTION_COLOR} />
-                <Picker.Item label="3rd Year" value="3rd Year" color={PICKER_OPTION_COLOR} />
-                <Picker.Item label="4th Year" value="4th Year" color={PICKER_OPTION_COLOR} />
+                <Picker.Item label="Select Year Level" value="" color={darkMode ? SLATE_300 : LIGHT_TEXT_SECONDARY} />
+                <Picker.Item label="1st Year" value="1st Year" color={darkMode ? SLATE_100 : LIGHT_TEXT} />
+                <Picker.Item label="2nd Year" value="2nd Year" color={darkMode ? SLATE_100 : LIGHT_TEXT} />
+                <Picker.Item label="3rd Year" value="3rd Year" color={darkMode ? SLATE_100 : LIGHT_TEXT} />
+                <Picker.Item label="4th Year" value="4th Year" color={darkMode ? SLATE_100 : LIGHT_TEXT} />
               </Picker>
             </View>
-            <Text style={styles.helperText}>Scroll to select your year level</Text>
+            <Text style={[styles.helperText, { color: secondaryTextColor }]}>Scroll to select your year level</Text>
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Email</Text>
-            <View style={styles.inputContainer}>
+            <Text style={[styles.label, { color: textColor }]}>Email</Text>
+            <View style={[styles.inputContainer, { borderColor: darkMode ? 'rgba(212, 175, 55, 0.2)' : 'rgba(212, 175, 55, 0.15)' }]}>
               <MaterialCommunityIcons name="email-outline" size={20} color={GOLD} />
               <TextInput
-                style={styles.input}
+                style={[styles.input, { color: textColor }]}
                 placeholder="your@email.com"
-                placeholderTextColor="rgba(203, 213, 225, 0.5)"
+                placeholderTextColor={darkMode ? 'rgba(203, 213, 225, 0.5)' : 'rgba(26, 26, 26, 0.4)'}
                 value={email}
                 onChangeText={setEmail}
                 keyboardType="email-address"
@@ -290,13 +308,13 @@ export default function SignupScreen({ navigation }) {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Password</Text>
-            <View style={styles.inputContainer}>
+            <Text style={[styles.label, { color: textColor }]}>Password</Text>
+            <View style={[styles.inputContainer, { borderColor: darkMode ? 'rgba(212, 175, 55, 0.2)' : 'rgba(212, 175, 55, 0.15)' }]}>
               <MaterialCommunityIcons name="lock-outline" size={20} color={GOLD} />
               <TextInput
-                style={styles.input}
+                style={[styles.input, { color: textColor }]}
                 placeholder="Create a password"
-                placeholderTextColor="rgba(203, 213, 225, 0.5)"
+                placeholderTextColor={darkMode ? 'rgba(203, 213, 225, 0.5)' : 'rgba(26, 26, 26, 0.4)'}
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry={!showPassword}
@@ -314,13 +332,13 @@ export default function SignupScreen({ navigation }) {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Confirm Password</Text>
-            <View style={styles.inputContainer}>
+            <Text style={[styles.label, { color: textColor }]}>Confirm Password</Text>
+            <View style={[styles.inputContainer, { borderColor: darkMode ? 'rgba(212, 175, 55, 0.2)' : 'rgba(212, 175, 55, 0.15)' }]}>
               <MaterialCommunityIcons name="lock-check-outline" size={20} color={GOLD} />
               <TextInput
-                style={styles.input}
+                style={[styles.input, { color: textColor }]}
                 placeholder="Confirm your password"
-                placeholderTextColor="rgba(203, 213, 225, 0.5)"
+                placeholderTextColor={darkMode ? 'rgba(203, 213, 225, 0.5)' : 'rgba(26, 26, 26, 0.4)'}
                 value={confirmPassword}
                 onChangeText={setConfirmPassword}
                 secureTextEntry={!showConfirmPassword}
@@ -339,7 +357,7 @@ export default function SignupScreen({ navigation }) {
 
           <View style={styles.termsContainer}>
             <MaterialCommunityIcons name="checkbox-marked-outline" size={20} color={GOLD} />
-            <Text style={styles.termsText}>
+            <Text style={[styles.termsText, { color: secondaryTextColor }]}>
               I agree to the <Text style={styles.termsLink}>Terms of Service</Text> and{' '}
               <Text style={styles.termsLink}>Privacy Policy</Text>
             </Text>
@@ -357,7 +375,7 @@ export default function SignupScreen({ navigation }) {
           </TouchableOpacity>
 
           <View style={styles.footer}>
-            <Text style={styles.footerText}>Already have an account? </Text>
+            <Text style={[styles.footerText, { color: secondaryTextColor }]}>Already have an account? </Text>
             <TouchableOpacity onPress={() => navigation?.navigate('Login')}>
               <Text style={styles.signInLink}>Sign In</Text>
             </TouchableOpacity>
@@ -376,6 +394,7 @@ const styles = StyleSheet.create({
   scroll: {
     flexGrow: 1,
     paddingHorizontal: 20,
+    backgroundColor: OCEAN_DEEP,
   },
   header: {
     flexDirection: 'row',
@@ -519,5 +538,11 @@ const styles = StyleSheet.create({
     color: SLATE_300,
     marginTop: 4,
     fontStyle: 'italic',
+  },
+  darkModeToggle: {
+    borderRadius: 8,
+    padding: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

@@ -11,14 +11,19 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { get, ref, update } from 'firebase/database';
-import { database } from '../../lib/firebase';
-
+import { database } from '../../lib/firebase';import { useTheme } from '../../lib/ThemeContext';
 const GOLD = '#D4AF37';
 const OCEAN_DEEP = '#001B2E';
 const CARD_BG = '#0B2740';
 const CARD_ALT_BG = '#12324E';
 const SLATE_100 = '#f1f5f9';
 const SLATE_300 = '#cbd5e1';
+
+// Light mode colors
+const LIGHT_BG = '#f5f5f5';
+const LIGHT_CARD = '#ffffff';
+const LIGHT_TEXT = '#1a1a1a';
+const LIGHT_TEXT_SECONDARY = '#666666';
 
 const parseName = (scholar) => {
 	const dbFirstName = (scholar?.firstName || '').trim();
@@ -70,8 +75,16 @@ const parseName = (scholar) => {
 export default function PrintRoster() {
 	const [isLoading, setIsLoading] = React.useState(true);
 	const [selectedSchool, setSelectedSchool] = React.useState('All');
+	const [selectedCashier, setSelectedCashier] = React.useState('All');
 	const [scholars, setScholars] = React.useState([]);
 	const [schools, setSchools] = React.useState([]);
+	const [cashiersInSchool, setCashiersInSchool] = React.useState([]);
+	const { darkMode } = useTheme();
+
+	const backgroundColor = darkMode ? OCEAN_DEEP : LIGHT_BG;
+	const cardBgColor = darkMode ? CARD_BG : LIGHT_CARD;
+	const textColor = darkMode ? SLATE_100 : LIGHT_TEXT;
+	const secondaryTextColor = darkMode ? SLATE_300 : LIGHT_TEXT_SECONDARY;
 
 	React.useEffect(() => {
 		const loadRoster = async () => {
@@ -114,7 +127,6 @@ export default function PrintRoster() {
 					.map(([uid, user]) => {
 						const { firstName, middleName, lastName } = parseName(user);
 						const schoolName = (user?.school || 'Not specified').trim() || 'Not specified';
-						const matchedCashier = normalizedCashiers.find((cashier) => cashier.schools.includes(schoolName));
 						return {
 							uid,
 							firstName,
@@ -122,7 +134,6 @@ export default function PrintRoster() {
 							lastName,
 							school: schoolName,
 							yearLevel: (user?.yearLevel || 'Not specified').trim() || 'Not specified',
-							cashierAssigned: matchedCashier?.fullName || 'Not assigned',
 							existingClaimingInfo: user?.claimingInfo || {},
 						};
 					})
@@ -140,17 +151,73 @@ export default function PrintRoster() {
 						return a.middleName.localeCompare(b.middleName);
 					});
 
-				const updates = {};
-				scholarRecords.forEach((item, index) => {
-					const queueNumber = index + 1;
-					const existingQueue = Number(item?.existingClaimingInfo?.queueNumber || 0);
-					const existingCashier = String(item?.existingClaimingInfo?.cashierAssigned || '').trim();
-					const nextCashier = item.cashierAssigned;
+				// Group scholars by school
+				const scholarsBySchool = {};
+				scholarRecords.forEach((item) => {
+					const school = item.school;
+					if (!scholarsBySchool[school]) {
+						scholarsBySchool[school] = [];
+					}
+					scholarsBySchool[school].push(item);
+				});
 
-					if (existingQueue !== queueNumber || existingCashier !== nextCashier) {
-						updates[`users/${item.uid}/claimingInfo/queueNumber`] = queueNumber;
-						updates[`users/${item.uid}/claimingInfo/cashierAssigned`] = nextCashier;
-						updates[`users/${item.uid}/claimingInfo/updatedAt`] = Date.now();
+				const updates = {};
+				const processedScholars = [];
+
+				// For each school, distribute scholars among cashiers
+				Object.entries(scholarsBySchool).forEach(([school, schoolScholars]) => {
+					// Find all cashiers assigned to this school
+					const schoolCashiers = normalizedCashiers.filter((cashier) => cashier.schools.includes(school));
+
+					if (schoolCashiers.length === 0) {
+						// No cashiers assigned to this school, mark as "Not assigned"
+						schoolScholars.forEach((scholar) => {
+							updates[`users/${scholar.uid}/claimingInfo/cashierAssigned`] = 'Not assigned';
+							updates[`users/${scholar.uid}/claimingInfo/queueNumber`] = 0;
+							updates[`users/${scholar.uid}/claimingInfo/updatedAt`] = Date.now();
+							processedScholars.push({
+								...scholar,
+								cashierAssigned: 'Not assigned',
+								queueNumber: '—',
+							});
+						});
+					} else {
+						// Distribute scholars evenly among cashiers
+						const totalScholars = schoolScholars.length;
+						const numCashiers = schoolCashiers.length;
+						const baseFull = Math.floor(totalScholars / numCashiers);
+						const remainder = totalScholars % numCashiers;
+
+						let scholarIndex = 0;
+
+						// Distribute scholars to each cashier
+						schoolCashiers.forEach((cashier, cashierIndex) => {
+							// Calculate how many scholars this cashier should get
+							const scholarCount = cashierIndex < remainder ? baseFull + 1 : baseFull;
+
+							// Assign scholars to this cashier
+							for (let i = 0; i < scholarCount; i++) {
+								const scholar = schoolScholars[scholarIndex];
+								const queueNumber = i + 1; // Queue number starts from 1 for each cashier
+								const existingQueue = Number(scholar?.existingClaimingInfo?.queueNumber || 0);
+								const existingCashier = String(scholar?.existingClaimingInfo?.cashierAssigned || '').trim();
+								const nextCashier = cashier.fullName;
+
+								if (existingQueue !== queueNumber || existingCashier !== nextCashier) {
+									updates[`users/${scholar.uid}/claimingInfo/queueNumber`] = queueNumber;
+									updates[`users/${scholar.uid}/claimingInfo/cashierAssigned`] = nextCashier;
+									updates[`users/${scholar.uid}/claimingInfo/updatedAt`] = Date.now();
+								}
+
+								processedScholars.push({
+									...scholar,
+									cashierAssigned: nextCashier,
+									queueNumber: `#${queueNumber}`,
+								});
+
+								scholarIndex++;
+							}
+						});
 					}
 				});
 
@@ -159,9 +226,13 @@ export default function PrintRoster() {
 				}
 
 				const uniqueSchools = Array.from(new Set(scholarRecords.map((item) => item.school))).sort();
+				const uniqueCashiers = Array.from(new Set(processedScholars.map((item) => item.cashierAssigned)))
+					.filter((cashier) => cashier !== 'Not assigned')
+					.sort();
 
-				setScholars(scholarRecords);
+				setScholars(processedScholars);
 				setSchools(uniqueSchools);
+				setCashiersInSchool(uniqueCashiers);
 			} finally {
 				setIsLoading(false);
 			}
@@ -174,12 +245,26 @@ export default function PrintRoster() {
 		? scholars
 		: scholars.filter((item) => item.school === selectedSchool);
 
-	return (
-		<SafeAreaView style={styles.safe}>
-			<StatusBar style="light" />
+	const finalScholars = selectedCashier === 'All'
+		? filteredScholars
+		: filteredScholars.filter((item) => item.cashierAssigned === selectedCashier);
 
-			<View style={styles.header}>
-				<Text style={styles.headerTitle}>Print Roster</Text>
+	// Calculate cashiers for the selected school
+	const cashiersForSelectedSchool = selectedSchool === 'All'
+		? cashiersInSchool
+		: Array.from(new Set(
+			scholars
+				.filter((item) => item.school === selectedSchool)
+				.map((item) => item.cashierAssigned)
+				.filter((cashier) => cashier && cashier !== 'Not assigned')
+		)).sort();
+
+	return (
+		<SafeAreaView style={[styles.safe, { backgroundColor }]}>
+			<StatusBar barStyle={darkMode ? 'light-content' : 'dark-content'} translucent={true} backgroundColor="transparent" />
+
+			<View style={[styles.header, { backgroundColor }]}>
+				<Text style={[styles.headerTitle, { color: textColor }]}>Print Roster</Text>
 			</View>
 
 			{isLoading ? (
@@ -187,8 +272,8 @@ export default function PrintRoster() {
 					<ActivityIndicator size="large" color={GOLD} />
 				</View>
 			) : (
-				<ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-					<Text style={styles.filterTitle}>Filter by School</Text>
+				<ScrollView contentContainerStyle={[styles.scroll, { backgroundColor }]} showsVerticalScrollIndicator={false}>
+					<Text style={[styles.filterTitle, { color: textColor }]}>Filter by School</Text>
 					<ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterRow}>
 						{['All', ...schools].map((school) => {
 							const isActive = selectedSchool === school;
@@ -196,40 +281,68 @@ export default function PrintRoster() {
 								<TouchableOpacity
 									key={school}
 									style={[styles.filterChip, isActive && styles.filterChipActive]}
-									onPress={() => setSelectedSchool(school)}
+									onPress={() => {
+										setSelectedSchool(school);
+										setSelectedCashier('All');
+									}}
 									activeOpacity={0.85}
 								>
-									<Text style={[styles.filterChipText, isActive && styles.filterChipTextActive]}>{school}</Text>
+									<Text style={[styles.filterChipText, isActive && styles.filterChipTextActive, { color: isActive ? GOLD : secondaryTextColor }]}>{school}</Text>
 								</TouchableOpacity>
 							);
 						})}
 					</ScrollView>
 
+					{selectedSchool !== 'All' && cashiersForSelectedSchool.length > 0 && (
+						<>
+							<Text style={[styles.filterTitle, { color: textColor }]}>Filter by Cashier</Text>
+							<ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterRow}>
+								{['All', ...cashiersForSelectedSchool].map((cashier) => {
+									const isActive = selectedCashier === cashier;
+									return (
+										<TouchableOpacity
+											key={cashier}
+											style={[styles.filterChip, isActive && styles.filterChipActive]}
+											onPress={() => setSelectedCashier(cashier)}
+											activeOpacity={0.85}
+										>
+											<Text style={[styles.filterChipText, isActive && styles.filterChipTextActive, { color: isActive ? GOLD : secondaryTextColor }]}>{cashier}</Text>
+										</TouchableOpacity>
+									);
+								})}
+							</ScrollView>
+						</>
+					)}
+
 					<ScrollView horizontal showsHorizontalScrollIndicator={false}>
-						<View style={styles.tableWrap}>
-							<View style={[styles.row, styles.headerRow]}>
-								<Text style={[styles.cellText, styles.colNo, styles.headerCellText]}>No.</Text>
-								<Text style={[styles.cellText, styles.colLastName, styles.headerCellText]}>Lastname</Text>
-								<Text style={[styles.cellText, styles.colFirstName, styles.headerCellText]}>First name</Text>
-								<Text style={[styles.cellText, styles.colMiddleName, styles.headerCellText]}>Middlename</Text>
-								<Text style={[styles.cellText, styles.colSchool, styles.headerCellText]}>School</Text>
-								<Text style={[styles.cellText, styles.colYearLevel, styles.headerCellText]}>Yearlevel</Text>
+						<View style={[styles.tableWrap, { backgroundColor: cardBgColor }]}>
+							<View style={[styles.row, styles.headerRow, { backgroundColor: darkMode ? CARD_ALT_BG : '#f5f5f5' }]}>
+								<Text style={[styles.cellText, styles.colNo, styles.headerCellText, { color: GOLD }]}>No.</Text>
+								<Text style={[styles.cellText, styles.colLastName, styles.headerCellText, { color: GOLD }]}>Lastname</Text>
+								<Text style={[styles.cellText, styles.colFirstName, styles.headerCellText, { color: GOLD }]}>First name</Text>
+								<Text style={[styles.cellText, styles.colMiddleName, styles.headerCellText, { color: GOLD }]}>Middlename</Text>
+								<Text style={[styles.cellText, styles.colSchool, styles.headerCellText, { color: GOLD }]}>School</Text>
+								<Text style={[styles.cellText, styles.colYearLevel, styles.headerCellText, { color: GOLD }]}>Yearlevel</Text>
+								<Text style={[styles.cellText, styles.colCashier, styles.headerCellText, { color: GOLD }]}>Cashier</Text>
+								<Text style={[styles.cellText, styles.colQueue, styles.headerCellText, { color: GOLD }]}>Queue</Text>
 							</View>
 
-							{filteredScholars.length === 0 ? (
-								<View style={styles.emptyTableRow}>
-									<MaterialCommunityIcons name="table-off" size={20} color={SLATE_300} />
-									<Text style={styles.emptyTableText}>No scholars found for this filter.</Text>
+							{finalScholars.length === 0 ? (
+								<View style={[styles.emptyTableRow, { backgroundColor: cardBgColor }]}>
+									<MaterialCommunityIcons name="table-off" size={20} color={secondaryTextColor} />
+									<Text style={[styles.emptyTableText, { color: secondaryTextColor }]}>No scholars found for this filter.</Text>
 								</View>
 							) : (
-								filteredScholars.map((item, index) => (
-									<View key={`${item.lastName}-${item.firstName}-${index}`} style={styles.row}>
-										<Text style={[styles.cellText, styles.colNo]}>{index + 1}</Text>
-										<Text style={[styles.cellText, styles.colLastName]}>{item.lastName || '-'}</Text>
-										<Text style={[styles.cellText, styles.colFirstName]}>{item.firstName || '-'}</Text>
-										<Text style={[styles.cellText, styles.colMiddleName]}>{item.middleName || '-'}</Text>
-										<Text style={[styles.cellText, styles.colSchool]}>{item.school}</Text>
-										<Text style={[styles.cellText, styles.colYearLevel]}>{item.yearLevel}</Text>
+								finalScholars.map((item, index) => (
+										<View key={`${item.lastName}-${item.firstName}-${index}`} style={[styles.row, { backgroundColor: cardBgColor }]}>
+											<Text style={[styles.cellText, styles.colNo, { color: textColor }]}>{index + 1}</Text>
+											<Text style={[styles.cellText, styles.colLastName, { color: textColor }]}>{item.lastName || '-'}</Text>
+											<Text style={[styles.cellText, styles.colFirstName, { color: textColor }]}>{item.firstName || '-'}</Text>
+											<Text style={[styles.cellText, styles.colMiddleName, { color: textColor }]}>{item.middleName || '-'}</Text>
+											<Text style={[styles.cellText, styles.colSchool, { color: textColor }]}>{item.school}</Text>
+											<Text style={[styles.cellText, styles.colYearLevel, { color: textColor }]}>{item.yearLevel}</Text>
+											<Text style={[styles.cellText, styles.colCashier, { color: textColor }]}>{item.cashierAssigned || 'N/A'}</Text>
+											<Text style={[styles.cellText, styles.colQueue, { color: textColor }]}>{item.queueNumber || '—'}</Text>
 									</View>
 								))
 							)}
@@ -244,7 +357,6 @@ export default function PrintRoster() {
 const styles = StyleSheet.create({
 	safe: {
 		flex: 1,
-		backgroundColor: OCEAN_DEEP,
 	},
 	header: {
 		paddingHorizontal: 20,
@@ -254,7 +366,6 @@ const styles = StyleSheet.create({
 		borderBottomColor: 'rgba(212, 175, 55, 0.2)',
 	},
 	headerTitle: {
-		color: SLATE_100,
 		fontSize: 22,
 		fontWeight: '700',
 	},
@@ -269,7 +380,6 @@ const styles = StyleSheet.create({
 		paddingBottom: 24,
 	},
 	filterTitle: {
-		color: SLATE_100,
 		fontSize: 14,
 		fontWeight: '700',
 		marginBottom: 8,
@@ -278,7 +388,6 @@ const styles = StyleSheet.create({
 		paddingBottom: 12,
 	},
 	filterChip: {
-		backgroundColor: CARD_BG,
 		borderWidth: 1,
 		borderColor: 'rgba(212, 175, 55, 0.2)',
 		borderRadius: 999,
@@ -287,11 +396,9 @@ const styles = StyleSheet.create({
 		marginRight: 8,
 	},
 	filterChipActive: {
-		backgroundColor: 'rgba(212, 175, 55, 0.16)',
 		borderColor: GOLD,
 	},
 	filterChipText: {
-		color: SLATE_300,
 		fontSize: 12,
 		fontWeight: '600',
 	},
@@ -303,20 +410,16 @@ const styles = StyleSheet.create({
 		borderColor: 'rgba(212, 175, 55, 0.2)',
 		borderRadius: 12,
 		overflow: 'hidden',
-		backgroundColor: CARD_BG,
-		minWidth: 880,
+		minWidth: 1120,
 	},
 	row: {
 		flexDirection: 'row',
 		borderBottomWidth: 1,
 		borderBottomColor: 'rgba(212, 175, 55, 0.14)',
-		backgroundColor: CARD_BG,
 	},
 	headerRow: {
-		backgroundColor: CARD_ALT_BG,
 	},
 	cellText: {
-		color: SLATE_100,
 		fontSize: 12,
 		paddingVertical: 10,
 		paddingHorizontal: 10,
@@ -343,16 +446,20 @@ const styles = StyleSheet.create({
 	colYearLevel: {
 		width: 120,
 	},
+	colCashier: {
+		width: 140,
+	},
+	colQueue: {
+		width: 100,
+	},
 	emptyTableRow: {
 		flexDirection: 'row',
 		alignItems: 'center',
 		justifyContent: 'center',
 		paddingVertical: 22,
-		backgroundColor: CARD_BG,
 		gap: 8,
 	},
 	emptyTableText: {
-		color: SLATE_300,
 		fontSize: 12,
 	},
 });

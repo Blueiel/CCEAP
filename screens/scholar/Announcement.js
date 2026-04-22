@@ -22,6 +22,12 @@ const CARD_ALT_BG = '#12324E';
 const SLATE_100 = '#f1f5f9';
 const SLATE_300 = '#cbd5e1';
 
+// Light mode colors
+const LIGHT_BG = '#f5f5f5';
+const LIGHT_CARD = '#ffffff';
+const LIGHT_TEXT = '#1a1a1a';
+const LIGHT_TEXT_SECONDARY = '#666666';
+
 const formatTimeAgo = (timestamp) => {
   if (!timestamp || Number.isNaN(Number(timestamp))) {
     return 'Just now';
@@ -40,8 +46,19 @@ const formatTimeAgo = (timestamp) => {
 
 export default function ScholarAnnouncement({ navigation }) {
   const [headerFirstName, setHeaderFirstName] = React.useState('Scholar');
+  const [darkMode, setDarkMode] = React.useState(false);
   const [loading, setLoading] = React.useState(true);
   const [announcements, setAnnouncements] = React.useState([]);
+
+  const handleDarkModeToggle = () => {
+    toggleDarkMode();
+  };
+
+  const backgroundColor = darkMode ? OCEAN_DEEP : LIGHT_BG;
+  const headerBgColor = darkMode ? OCEAN_DEEP : LIGHT_BG;
+  const cardBgColor = darkMode ? CARD_BG : LIGHT_CARD;
+  const textColor = darkMode ? SLATE_100 : LIGHT_TEXT;
+  const secondaryTextColor = darkMode ? SLATE_300 : LIGHT_TEXT_SECONDARY;
 
   const loadData = React.useCallback(async () => {
     const user = auth.currentUser;
@@ -106,46 +123,50 @@ export default function ScholarAnnouncement({ navigation }) {
   const handleGoSettings = () => navigation.replace('Settings');
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <StatusBar style="light" />
+    <SafeAreaView style={[styles.safe, { backgroundColor }]}>
+      <StatusBar barStyle={darkMode ? 'light-content' : 'dark-content'} translucent={true} backgroundColor="transparent" />
 
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: headerBgColor }]}>
         <View style={styles.headerLeft}>
-          <Text style={styles.brand}>Hi, {headerFirstName}</Text>
+          <Text style={[styles.brand, { color: textColor }]}>Hi, {headerFirstName}</Text>
           <View style={styles.headerTag}>
             <Text style={styles.headerTagText}>ACTIVE SCHOLAR</Text>
           </View>
         </View>
+
+        <TouchableOpacity style={[styles.darkModeToggle, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleDarkModeToggle}>
+          <MaterialCommunityIcons name={darkMode ? 'white-balance-sunny' : 'moon-waning-crescent'} size={18} color={GOLD} />
+        </TouchableOpacity>
 
         <TouchableOpacity style={styles.notifButton} activeOpacity={0.85} onPress={handleLogout}>
           <MaterialCommunityIcons name="logout" size={22} color={GOLD} />
         </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        <Text style={styles.pageTitle}>Announcements</Text>
+      <ScrollView contentContainerStyle={[styles.scroll, { backgroundColor }]} showsVerticalScrollIndicator={false}>
+        <Text style={[styles.pageTitle, { color: textColor }]}>Announcements</Text>
 
         {loading ? (
           <View style={styles.loaderContainer}>
             <ActivityIndicator size="large" color={GOLD} />
           </View>
         ) : announcements.length === 0 ? (
-          <View style={styles.emptyCard}>
-            <MaterialCommunityIcons name="bullhorn-outline" size={44} color={SLATE_300} />
-            <Text style={styles.emptyTitle}>No announcements yet</Text>
-            <Text style={styles.emptyText}>Admin announcements will appear here.</Text>
+          <View style={[styles.emptyCard, { backgroundColor: cardBgColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.16)' : 'rgba(212, 175, 55, 0.08)' }]}>
+            <MaterialCommunityIcons name="bullhorn-outline" size={44} color={secondaryTextColor} />
+            <Text style={[styles.emptyTitle, { color: textColor }]}>No announcements yet</Text>
+            <Text style={[styles.emptyText, { color: secondaryTextColor }]}>Admin announcements will appear here.</Text>
           </View>
         ) : (
           announcements.map((item) => (
-            <View key={item.id} style={styles.announcementCard}>
-              <View style={styles.iconWrap}>
+            <View key={item.id} style={[styles.announcementCard, { backgroundColor: cardBgColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.16)' : 'rgba(212, 175, 55, 0.08)' }]}>
+              <View style={[styles.iconWrap, { backgroundColor: darkMode ? 'rgba(212, 175, 55, 0.12)' : 'rgba(212, 175, 55, 0.1)' }]}>
                 <MaterialCommunityIcons name="bullhorn-outline" size={20} color={GOLD} />
               </View>
 
               <View style={styles.contentWrap}>
-                <Text style={styles.cardTitle}>{item?.title?.trim() || 'Announcement'}</Text>
-                <Text style={styles.cardBody}>{item?.message?.trim() || 'No message provided.'}</Text>
-                <Text style={styles.cardMeta}>
+                <Text style={[styles.cardTitle, { color: textColor }]}>{item?.title?.trim() || 'Announcement'}</Text>
+                <Text style={[styles.cardBody, { color: secondaryTextColor }]}>{item?.message?.trim() || 'No message provided.'}</Text>
+                <Text style={[styles.cardMeta, { color: secondaryTextColor }]}>
                   Posted by {item?.createdByName || 'Admin'} • {formatTimeAgo(item?.createdAt)}
                 </Text>
               </View>
@@ -154,7 +175,7 @@ export default function ScholarAnnouncement({ navigation }) {
         )}
       </ScrollView>
 
-      <View style={styles.bottomNav}>
+      <View style={[styles.bottomNav, { backgroundColor: cardBgColor, borderTopColor: darkMode ? 'rgba(212, 175, 55, 0.22)' : 'rgba(212, 175, 55, 0.1)' }]}>
         {[
           ['view-dashboard-outline', 'Status', false, handleGoStatus],
           ['calendar-check-outline', 'Appointment', false, handleGoAppointment],
@@ -227,10 +248,22 @@ const styles = {
     alignItems: 'center',
     position: 'relative',
   },
+  darkModeToggle: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: CARD_BG,
+    borderWidth: 1,
+    borderColor: 'rgba(212, 175, 55, 0.24)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+  },
   scroll: {
     paddingHorizontal: 20,
     paddingTop: 16,
     paddingBottom: 110,
+    backgroundColor: OCEAN_DEEP,
   },
   pageTitle: {
     color: SLATE_100,

@@ -16,6 +16,7 @@ import { useNavigation } from '@react-navigation/native';
 import { ref, get, set, serverTimestamp } from 'firebase/database';
 import { signOut } from 'firebase/auth';
 import { auth, database } from '../../lib/firebase';
+import { useTheme } from '../../lib/ThemeContext';
 
 const GOLD = '#D4AF37';
 const OCEAN_DEEP = '#001B2E';
@@ -23,6 +24,12 @@ const CARD_BG = '#0B2740';
 const CARD_ALT_BG = '#12324E';
 const SLATE_100 = '#f1f5f9';
 const SLATE_300 = '#cbd5e1';
+
+// Light mode colors
+const LIGHT_BG = '#f5f5f5';
+const LIGHT_CARD = '#ffffff';
+const LIGHT_TEXT = '#1a1a1a';
+const LIGHT_TEXT_SECONDARY = '#666666';
 
 const normalizeCashier = (item, index) => ({
   id: String(item?.id || Date.now() + index),
@@ -46,6 +53,7 @@ export default function CashierSetup() {
   const [schoolOptions, setSchoolOptions] = React.useState([]);
   const [isSchoolDropdownOpen, setIsSchoolDropdownOpen] = React.useState(false);
   const [cashiers, setCashiers] = React.useState([]);
+  const [darkMode, setDarkMode] = React.useState(false);
 
   const performLogout = async () => {
     try {
@@ -62,6 +70,16 @@ export default function CashierSetup() {
       { text: 'Log out', style: 'destructive', onPress: performLogout },
     ]);
   };
+
+  const handleDarkModeToggle = () => {
+    toggleDarkMode();
+  };
+
+  const backgroundColor = darkMode ? OCEAN_DEEP : LIGHT_BG;
+  const headerBgColor = darkMode ? OCEAN_DEEP : LIGHT_BG;
+  const cardBgColor = darkMode ? CARD_BG : LIGHT_CARD;
+  const textColor = darkMode ? SLATE_100 : LIGHT_TEXT;
+  const secondaryTextColor = darkMode ? SLATE_300 : LIGHT_TEXT_SECONDARY;
 
   const loadData = React.useCallback(async () => {
     setLoading(true);
@@ -197,18 +215,22 @@ export default function CashierSetup() {
   };
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <StatusBar style="light" />
+    <SafeAreaView style={[styles.safe, { backgroundColor }]}>
+      <StatusBar barStyle={darkMode ? 'light-content' : 'dark-content'} translucent={true} backgroundColor="transparent" />
 
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: headerBgColor }]}>
         <TouchableOpacity style={styles.iconButton} activeOpacity={0.85} onPress={() => navigation.goBack()}>
           <MaterialCommunityIcons name="arrow-left" size={22} color={GOLD} />
         </TouchableOpacity>
 
         <View style={styles.headerCenter}>
-          <Text style={styles.brand}>Cashier Setup</Text>
-          <Text style={styles.headerSubtitle}>Hi, {headerFullName || 'Admin'}</Text>
+          <Text style={[styles.brand, { color: textColor }]}>Cashier Setup</Text>
+          <Text style={[styles.headerSubtitle, { color: secondaryTextColor }]}>Hi, {headerFullName || 'Admin'}</Text>
         </View>
+
+        <TouchableOpacity style={[styles.darkModeToggle, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleDarkModeToggle}>
+          <MaterialCommunityIcons name={darkMode ? 'white-balance-sunny' : 'moon-waning-crescent'} size={18} color={GOLD} />
+        </TouchableOpacity>
 
         <TouchableOpacity style={styles.iconButton} activeOpacity={0.85} onPress={handleLogout}>
           <MaterialCommunityIcons name="logout" size={20} color={GOLD} />
@@ -220,26 +242,26 @@ export default function CashierSetup() {
           <ActivityIndicator size="large" color={GOLD} />
         </View>
       ) : (
-        <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>Add Cashier</Text>
+        <ScrollView contentContainerStyle={[styles.scroll, { backgroundColor }]} showsVerticalScrollIndicator={false}>
+          <View style={[styles.card, { backgroundColor: cardBgColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.18)' : 'rgba(212, 175, 55, 0.08)' }]}>
+            <Text style={[styles.cardTitle, { color: textColor }]}>Add Cashier</Text>
 
-            <Text style={styles.label}>Cashier Name</Text>
+            <Text style={[styles.label, { color: secondaryTextColor }]}>Cashier Name</Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { backgroundColor: darkMode ? CARD_ALT_BG : '#f9f9f9', color: textColor }]}
               value={cashierName}
               onChangeText={setCashierName}
               placeholder="Enter cashier full name"
               placeholderTextColor={SLATE_300}
             />
 
-            <Text style={styles.label}>School Assignment</Text>
+            <Text style={[styles.label, { color: secondaryTextColor }]}>School Assignment</Text>
             <TouchableOpacity
-              style={styles.dropdownTrigger}
+              style={[styles.dropdownTrigger, { backgroundColor: darkMode ? CARD_ALT_BG : '#f9f9f9' }]}
               activeOpacity={0.85}
               onPress={() => setIsSchoolDropdownOpen((prev) => !prev)}
             >
-              <Text style={selectedSchools.length ? styles.dropdownValue : styles.dropdownPlaceholder}>
+              <Text style={[selectedSchools.length ? styles.dropdownValue : styles.dropdownPlaceholder, { color: selectedSchools.length ? textColor : secondaryTextColor }]}>
                 {selectedSchools.length
                   ? `${selectedSchools.length} school${selectedSchools.length > 1 ? 's' : ''} selected`
                   : 'Select school(s)'}
@@ -247,12 +269,12 @@ export default function CashierSetup() {
               <MaterialCommunityIcons
                 name={isSchoolDropdownOpen ? 'chevron-up' : 'chevron-down'}
                 size={18}
-                color={SLATE_300}
+                color={secondaryTextColor}
               />
             </TouchableOpacity>
 
             {isSchoolDropdownOpen ? (
-              <View style={styles.dropdownMenu}>
+              <View style={[styles.dropdownMenu, { backgroundColor: darkMode ? CARD_ALT_BG : '#f9f9f9' }]}>
                 <ScrollView
                   style={styles.dropdownScroll}
                   showsVerticalScrollIndicator
@@ -263,7 +285,7 @@ export default function CashierSetup() {
                     return (
                       <TouchableOpacity
                         key={school}
-                        style={[styles.dropdownItem, isActive && styles.dropdownItemActive]}
+                        style={[styles.dropdownItem, isActive && { backgroundColor: darkMode ? 'rgba(212, 175, 55, 0.12)' : 'rgba(212, 175, 55, 0.06)' }]}
                         activeOpacity={0.85}
                         onPress={() => {
                           setSelectedSchools((prev) =>
@@ -279,17 +301,17 @@ export default function CashierSetup() {
                           color={isActive ? GOLD : SLATE_300}
                           style={styles.dropdownCheck}
                         />
-                        <Text style={[styles.dropdownItemText, isActive && styles.dropdownItemTextActive]}>{school}</Text>
+                        <Text style={[styles.dropdownItemText, isActive && styles.dropdownItemTextActive, { color: isActive ? GOLD : textColor }]}>{school}</Text>
                       </TouchableOpacity>
                     );
                   })}
                 </ScrollView>
                 <TouchableOpacity
-                  style={styles.dropdownDoneButton}
+                  style={[styles.dropdownDoneButton, { backgroundColor: darkMode ? 'rgba(212, 175, 55, 0.12)' : 'rgba(212, 175, 55, 0.06)' }]}
                   activeOpacity={0.85}
                   onPress={() => setIsSchoolDropdownOpen(false)}
                 >
-                  <Text style={styles.dropdownDoneText}>Done</Text>
+                  <Text style={[styles.dropdownDoneText, { color: GOLD }]}>Done</Text>
                 </TouchableOpacity>
               </View>
             ) : null}
@@ -303,40 +325,40 @@ export default function CashierSetup() {
               {saving ? (
                 <ActivityIndicator size="small" color={OCEAN_DEEP} />
               ) : (
-                <Text style={styles.primaryButtonText}>ADD CASHIER</Text>
+                <Text style={[styles.primaryButtonText, { color: darkMode ? OCEAN_DEEP : '#ffffff' }]}>ADD CASHIER</Text>
               )}
             </TouchableOpacity>
           </View>
 
-          <View style={[styles.card, styles.cardSpacing]}>
-            <Text style={styles.cardTitle}>Configured Cashiers</Text>
+          <View style={[styles.card, styles.cardSpacing, { backgroundColor: cardBgColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.18)' : 'rgba(212, 175, 55, 0.08)' }]}>
+            <Text style={[styles.cardTitle, { color: textColor }]}>Configured Cashiers</Text>
 
             {cashiers.length === 0 ? (
               <View style={styles.emptyWrap}>
-                <MaterialCommunityIcons name="account-off-outline" size={22} color={SLATE_300} />
-                <Text style={styles.emptyText}>No cashier assigned yet.</Text>
+                <MaterialCommunityIcons name="account-off-outline" size={22} color={secondaryTextColor} />
+                <Text style={[styles.emptyText, { color: secondaryTextColor }]}>No cashier assigned yet.</Text>
               </View>
             ) : (
               cashiers.map((item) => {
                 const isDeleting = deletingCashierId === item.id;
 
                 return (
-                <View key={item.id} style={styles.cashierItem}>
+                <View key={item.id} style={[styles.cashierItem, { backgroundColor: darkMode ? CARD_ALT_BG : '#f9f9f9' }]}>
                   <View style={styles.cashierIconWrap}>
                     <MaterialCommunityIcons name="account-cash-outline" size={16} color={GOLD} />
                   </View>
-                  <View style={styles.cashierInfo}>
-                    <Text style={styles.cashierName}>{item.fullName}</Text>
-                    <Text style={styles.cashierCounter}>{item.schools.join(' • ')}</Text>
+                  <View style={[styles.cashierInfo]}>
+                    <Text style={[styles.cashierName, { color: textColor }]}>{item.fullName}</Text>
+                    <Text style={[styles.cashierCounter, { color: secondaryTextColor }]}>{item.schools.join(' • ')}</Text>
                   </View>
                   <TouchableOpacity
-                    style={[styles.deleteButton, isDeleting && styles.deleteButtonDisabled]}
+                    style={[styles.deleteButton, { backgroundColor: darkMode ? 'rgba(239, 68, 68, 0.18)' : 'rgba(239, 68, 68, 0.1)' }, isDeleting && styles.deleteButtonDisabled]}
                     activeOpacity={0.85}
                     disabled={isDeleting}
                     onPress={() => handleDeleteCashier(item)}
                   >
                     {isDeleting ? (
-                      <ActivityIndicator size="small" color={SLATE_300} />
+                      <ActivityIndicator size="small" color={secondaryTextColor} />
                     ) : (
                       <MaterialCommunityIcons name="trash-can-outline" size={16} color="#fecaca" />
                     )}
@@ -355,7 +377,17 @@ export default function CashierSetup() {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: OCEAN_DEEP,
+  },
+  darkModeToggle: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: CARD_BG,
+    borderWidth: 1,
+    borderColor: 'rgba(212, 175, 55, 0.24)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
   },
   header: {
     flexDirection: 'row',
@@ -371,7 +403,6 @@ const styles = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: 19,
-    backgroundColor: CARD_BG,
     borderWidth: 1,
     borderColor: 'rgba(212, 175, 55, 0.24)',
     justifyContent: 'center',
@@ -382,12 +413,10 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,
   },
   brand: {
-    color: SLATE_100,
     fontSize: 18,
     fontWeight: '700',
   },
   headerSubtitle: {
-    color: SLATE_300,
     fontSize: 11,
     marginTop: 2,
   },
@@ -402,7 +431,6 @@ const styles = StyleSheet.create({
     paddingBottom: 24,
   },
   card: {
-    backgroundColor: CARD_BG,
     borderWidth: 1,
     borderColor: 'rgba(212, 175, 55, 0.18)',
     borderRadius: 14,
@@ -412,13 +440,11 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   cardTitle: {
-    color: SLATE_100,
     fontSize: 16,
     fontWeight: '700',
     marginBottom: 12,
   },
   label: {
-    color: SLATE_300,
     fontSize: 11,
     fontWeight: '700',
     marginBottom: 6,
@@ -426,10 +452,8 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
   },
   input: {
-    backgroundColor: CARD_ALT_BG,
     borderWidth: 1,
     borderColor: 'rgba(212, 175, 55, 0.22)',
-    color: SLATE_100,
     borderRadius: 10,
     paddingHorizontal: 12,
     paddingVertical: 12,
@@ -437,7 +461,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   dropdownTrigger: {
-    backgroundColor: CARD_ALT_BG,
     borderWidth: 1,
     borderColor: 'rgba(212, 175, 55, 0.22)',
     borderRadius: 10,
@@ -449,15 +472,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   dropdownPlaceholder: {
-    color: SLATE_300,
     fontSize: 14,
   },
   dropdownValue: {
-    color: SLATE_100,
     fontSize: 14,
   },
   dropdownMenu: {
-    backgroundColor: CARD_ALT_BG,
     borderWidth: 1,
     borderColor: 'rgba(212, 175, 55, 0.22)',
     borderRadius: 10,
@@ -478,14 +498,11 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   dropdownItemActive: {
-    backgroundColor: 'rgba(212, 175, 55, 0.12)',
   },
   dropdownItemText: {
-    color: SLATE_100,
     fontSize: 13,
   },
   dropdownItemTextActive: {
-    color: GOLD,
     fontWeight: '700',
   },
   dropdownDoneButton: {
@@ -493,10 +510,8 @@ const styles = StyleSheet.create({
     borderTopColor: 'rgba(212, 175, 55, 0.2)',
     paddingVertical: 10,
     alignItems: 'center',
-    backgroundColor: 'rgba(212, 175, 55, 0.08)',
   },
   dropdownDoneText: {
-    color: GOLD,
     fontSize: 12,
     fontWeight: '700',
     letterSpacing: 0.3,
@@ -514,7 +529,6 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   primaryButtonText: {
-    color: OCEAN_DEEP,
     fontSize: 12,
     fontWeight: '800',
     letterSpacing: 0.7,
@@ -525,14 +539,12 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   emptyText: {
-    color: SLATE_300,
     fontSize: 12,
     marginLeft: 8,
   },
   cashierItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: CARD_ALT_BG,
     borderWidth: 1,
     borderColor: 'rgba(212, 175, 55, 0.2)',
     borderRadius: 10,
@@ -552,12 +564,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   cashierName: {
-    color: SLATE_100,
     fontSize: 13,
     fontWeight: '700',
   },
   cashierCounter: {
-    color: SLATE_300,
     fontSize: 11,
     marginTop: 2,
   },
@@ -567,7 +577,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(239, 68, 68, 0.18)',
     borderWidth: 1,
     borderColor: 'rgba(254, 202, 202, 0.35)',
     marginLeft: 8,

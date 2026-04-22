@@ -23,9 +23,16 @@ const CARD_ALT_BG = '#12324E';
 const SLATE_100 = '#f1f5f9';
 const SLATE_300 = '#cbd5e1';
 
+// Light mode colors
+const LIGHT_BG = '#f5f5f5';
+const LIGHT_CARD = '#ffffff';
+const LIGHT_TEXT = '#1a1a1a';
+const LIGHT_TEXT_SECONDARY = '#666666';
+
 export default function AdminSettings() {
   const navigation = useNavigation();
   const [headerFullName, setHeaderFullName] = React.useState('');
+  const [darkMode, setDarkMode] = React.useState(false);
   const [scholars, setScholars] = React.useState([]);
   const [schools, setSchools] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
@@ -62,6 +69,16 @@ export default function AdminSettings() {
       { text: 'Log out', style: 'destructive', onPress: performLogout },
     ]);
   };
+
+  const handleDarkModeToggle = () => {
+    toggleDarkMode();
+  };
+
+  const backgroundColor = darkMode ? OCEAN_DEEP : LIGHT_BG;
+  const headerBgColor = darkMode ? OCEAN_DEEP : LIGHT_BG;
+  const cardBgColor = darkMode ? CARD_BG : LIGHT_CARD;
+  const textColor = darkMode ? SLATE_100 : LIGHT_TEXT;
+  const secondaryTextColor = darkMode ? SLATE_300 : LIGHT_TEXT_SECONDARY;
 
   const loadAdminProfile = React.useCallback(async () => {
     const user = auth.currentUser;
@@ -385,22 +402,26 @@ export default function AdminSettings() {
   const handleGoAlerts = () => navigation.replace('Alerts');
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <StatusBar style="light" />
+    <SafeAreaView style={[styles.safe, { backgroundColor }]}>
+      <StatusBar barStyle={darkMode ? 'light-content' : 'dark-content'} translucent={true} backgroundColor="transparent" />
 
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor }]}>
         <View style={styles.headerLeft}>
-          <Text style={styles.brand}>Hi, {headerFullName || 'Admin'}</Text>
+          <Text style={[styles.brand, { color: textColor }]}>Hi, {headerFullName || 'Admin'}</Text>
         </View>
 
-        <TouchableOpacity style={styles.notifButton} activeOpacity={0.85} onPress={handleLogout}>
+        <TouchableOpacity style={[styles.darkModeToggle, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleDarkModeToggle}>
+          <MaterialCommunityIcons name={darkMode ? 'white-balance-sunny' : 'moon-waning-crescent'} size={18} color={GOLD} />
+        </TouchableOpacity>
+
+        <TouchableOpacity style={[styles.notifButton, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleLogout}>
           <MaterialCommunityIcons name="logout" size={22} color={GOLD} />
         </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={[styles.scroll, { backgroundColor }]} showsVerticalScrollIndicator={false}>
         {/* Tab Navigation */}
-        <View style={styles.tabContainer}>
+        <View style={[styles.tabContainer, { backgroundColor: cardBgColor }]}>
           <TouchableOpacity
             style={[styles.tabButton, activeTab === 'profile' && styles.tabButtonActive]}
             onPress={() => setActiveTab('profile')}
@@ -408,10 +429,10 @@ export default function AdminSettings() {
             <MaterialCommunityIcons
               name="account-edit"
               size={16}
-              color={activeTab === 'profile' ? GOLD : SLATE_300}
+              color={activeTab === 'profile' ? GOLD : secondaryTextColor}
               style={styles.tabIcon}
             />
-            <Text style={[styles.tabLabel, activeTab === 'profile' && styles.tabLabelActive]}>
+            <Text style={[styles.tabLabel, activeTab === 'profile' && styles.tabLabelActive, { color: activeTab === 'profile' ? GOLD : secondaryTextColor }]}>
               My Profile
             </Text>
           </TouchableOpacity>
@@ -423,10 +444,10 @@ export default function AdminSettings() {
             <MaterialCommunityIcons
               name="account-multiple-outline"
               size={16}
-              color={activeTab === 'scholars' ? GOLD : SLATE_300}
+              color={activeTab === 'scholars' ? GOLD : secondaryTextColor}
               style={styles.tabIcon}
             />
-            <Text style={[styles.tabLabel, activeTab === 'scholars' && styles.tabLabelActive]}>
+            <Text style={[styles.tabLabel, activeTab === 'scholars' && styles.tabLabelActive, { color: activeTab === 'scholars' ? GOLD : secondaryTextColor }]}>
               Manage Scholars
             </Text>
           </TouchableOpacity>
@@ -438,10 +459,10 @@ export default function AdminSettings() {
             <MaterialCommunityIcons
               name="school-outline"
               size={16}
-              color={activeTab === 'schools' ? GOLD : SLATE_300}
+              color={activeTab === 'schools' ? GOLD : secondaryTextColor}
               style={styles.tabIcon}
             />
-            <Text style={[styles.tabLabel, activeTab === 'schools' && styles.tabLabelActive]}>
+            <Text style={[styles.tabLabel, activeTab === 'schools' && styles.tabLabelActive, { color: activeTab === 'schools' ? GOLD : secondaryTextColor }]}>
               Schools
             </Text>
           </TouchableOpacity>
@@ -450,17 +471,17 @@ export default function AdminSettings() {
         {/* PROFILE TAB */}
         {activeTab === 'profile' && (
           <>
-            <Text style={styles.sectionTitle}>Admin Profile</Text>
+            <Text style={[styles.sectionTitle, { color: textColor }]}>Admin Profile</Text>
 
             {/* Profile Info Card */}
-            <View style={styles.profileCard}>
+            <View style={[styles.profileCard, { backgroundColor: cardBgColor }]}>
               <View style={styles.profileHeader}>
                 <View style={styles.largeAvatarWrap}>
                   <MaterialCommunityIcons name="account-circle" size={48} color={GOLD} />
                 </View>
                 <View style={styles.profileMeta}>
-                  <Text style={styles.profileName}>{headerFullName || 'Admin'}</Text>
-                  <Text style={styles.profileEmail}>{email || 'email@example.com'}</Text>
+                  <Text style={[styles.profileName, { color: textColor }]}>{headerFullName || 'Admin'}</Text>
+                  <Text style={[styles.profileEmail, { color: secondaryTextColor }]}>{email || 'email@example.com'}</Text>
                   <View style={styles.badgeWrap}>
                     <Text style={styles.badge}>ADMINISTRATOR</Text>
                   </View>
@@ -469,25 +490,25 @@ export default function AdminSettings() {
             </View>
 
             {/* Edit Profile Section */}
-            <Text style={styles.subsectionTitle}>Edit Profile Information</Text>
-            <View style={styles.formCard}>
+            <Text style={[styles.subsectionTitle, { color: textColor }]}>Edit Profile Information</Text>
+            <View style={[styles.formCard, { backgroundColor: cardBgColor }]}>
               <View style={styles.formGroup}>
-                <Text style={styles.label}>First Name</Text>
+                <Text style={[styles.label, { color: textColor }]}>First Name</Text>
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, { color: textColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.16)' : 'rgba(212, 175, 55, 0.08)', backgroundColor: darkMode ? CARD_ALT_BG : '#f9f9f9' }]}
                   placeholder="Enter first name"
-                  placeholderTextColor={SLATE_300}
+                  placeholderTextColor={secondaryTextColor}
                   value={firstName}
                   onChangeText={setFirstName}
                 />
               </View>
 
               <View style={styles.formGroup}>
-                <Text style={styles.label}>Last Name</Text>
+                <Text style={[styles.label, { color: textColor }]}>Last Name</Text>
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, { color: textColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.16)' : 'rgba(212, 175, 55, 0.08)', backgroundColor: darkMode ? CARD_ALT_BG : '#f9f9f9' }]}
                   placeholder="Enter last name"
-                  placeholderTextColor={SLATE_300}
+                  placeholderTextColor={secondaryTextColor}
                   value={lastName}
                   onChangeText={setLastName}
                 />
@@ -501,26 +522,26 @@ export default function AdminSettings() {
                 <MaterialCommunityIcons
                   name={savingProfile ? 'loading' : 'check'}
                   size={16}
-                  color={OCEAN_DEEP}
+                  color={darkMode ? OCEAN_DEEP : '#f5f5f5'}
                 />
-                <Text style={styles.saveButtonText}>{savingProfile ? 'Saving...' : 'Save Profile'}</Text>
+                <Text style={[styles.saveButtonText, { color: darkMode ? OCEAN_DEEP : '#f5f5f5' }]}>{savingProfile ? 'Saving...' : 'Save Profile'}</Text>
               </TouchableOpacity>
             </View>
 
             {/* Update Account Section */}
-            <Text style={styles.subsectionTitle}>Update Account</Text>
-            <View style={styles.formCard}>
+            <Text style={[styles.subsectionTitle, { color: textColor }]}>Update Account</Text>
+            <View style={[styles.formCard, { backgroundColor: cardBgColor }]}>
               <View style={styles.infoBox}>
-                <MaterialCommunityIcons name="information-outline" size={16} color={SLATE_300} />
-                <Text style={styles.infoBoxText}>Email: {email || 'Loading...'}</Text>
+                <MaterialCommunityIcons name="information-outline" size={16} color={secondaryTextColor} />
+                <Text style={[styles.infoBoxText, { color: secondaryTextColor }]}>Email: {email || 'Loading...'}</Text>
               </View>
 
               <View style={styles.formGroup}>
-                <Text style={styles.label}>Current Password</Text>
+                <Text style={[styles.label, { color: textColor }]}>Current Password</Text>
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, { color: textColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.16)' : 'rgba(212, 175, 55, 0.08)', backgroundColor: darkMode ? CARD_ALT_BG : '#f9f9f9' }]}
                   placeholder="Enter current password"
-                  placeholderTextColor={SLATE_300}
+                  placeholderTextColor={secondaryTextColor}
                   value={password}
                   onChangeText={setPassword}
                   secureTextEntry
@@ -528,11 +549,11 @@ export default function AdminSettings() {
               </View>
 
               <View style={styles.formGroup}>
-                <Text style={styles.label}>New Password</Text>
+                <Text style={[styles.label, { color: textColor }]}>New Password</Text>
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, { color: textColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.16)' : 'rgba(212, 175, 55, 0.08)', backgroundColor: darkMode ? CARD_ALT_BG : '#f9f9f9' }]}
                   placeholder="Enter new password"
-                  placeholderTextColor={SLATE_300}
+                  placeholderTextColor={secondaryTextColor}
                   value={newPassword}
                   onChangeText={setNewPassword}
                   secureTextEntry
@@ -540,11 +561,11 @@ export default function AdminSettings() {
               </View>
 
               <View style={styles.formGroup}>
-                <Text style={styles.label}>Confirm New Password</Text>
+                <Text style={[styles.label, { color: textColor }]}>Confirm New Password</Text>
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, { color: textColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.16)' : 'rgba(212, 175, 55, 0.08)', backgroundColor: darkMode ? CARD_ALT_BG : '#f9f9f9' }]}
                   placeholder="Confirm new password"
-                  placeholderTextColor={SLATE_300}
+                  placeholderTextColor={secondaryTextColor}
                   value={confirmPassword}
                   onChangeText={setConfirmPassword}
                   secureTextEntry
@@ -559,9 +580,9 @@ export default function AdminSettings() {
                 <MaterialCommunityIcons
                   name={updatingAccount ? 'loading' : 'lock-reset'}
                   size={16}
-                  color={updatingAccount ? SLATE_300 : SLATE_100}
+                  color={updatingAccount ? secondaryTextColor : (darkMode ? OCEAN_DEEP : '#f5f5f5')}
                 />
-                <Text style={[styles.updateButtonText, updatingAccount && styles.updateButtonTextDisabled]}>
+                <Text style={[styles.updateButtonText, updatingAccount && styles.updateButtonTextDisabled, { color: updatingAccount ? secondaryTextColor : (darkMode ? OCEAN_DEEP : '#f5f5f5') }]}>
                   {updatingAccount ? 'Updating...' : 'Update Password'}
                 </Text>
               </TouchableOpacity>
@@ -572,26 +593,26 @@ export default function AdminSettings() {
         {/* SCHOLARS TAB */}
         {activeTab === 'scholars' && (
           <>
-            <Text style={styles.sectionTitle}>Manage Scholar Accounts</Text>
+            <Text style={[styles.sectionTitle, { color: textColor }]}>Manage Scholar Accounts</Text>
 
-            <View style={styles.summaryCard}>
-              <Text style={styles.summaryTitle}>Scholar Account Controls</Text>
-              <Text style={styles.summaryText}>Queue scholars for permanent account deletion.</Text>
-              <Text style={styles.summaryCount}>{filteredScholars.length} scholars</Text>
+            <View style={[styles.summaryCard, { backgroundColor: cardBgColor }]}>
+              <Text style={[styles.summaryTitle, { color: textColor }]}>Scholar Account Controls</Text>
+              <Text style={[styles.summaryText, { color: secondaryTextColor }]}>Queue scholars for permanent account deletion.</Text>
+              <Text style={[styles.summaryCount, { color: GOLD }]}>{filteredScholars.length} scholars</Text>
             </View>
 
-            <View style={styles.searchWrap}>
-              <MaterialCommunityIcons name="magnify" size={18} color={SLATE_300} style={styles.searchIcon} />
+            <View style={[styles.searchWrap, { backgroundColor: cardBgColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.16)' : 'rgba(212, 175, 55, 0.08)' }]}>
+              <MaterialCommunityIcons name="magnify" size={18} color={secondaryTextColor} style={styles.searchIcon} />
               <TextInput
-                style={styles.searchInput}
+                style={[styles.searchInput, { color: textColor }]}
                 placeholder="Search scholar by name, email, school"
-                placeholderTextColor={SLATE_300}
+                placeholderTextColor={secondaryTextColor}
                 value={searchQuery}
                 onChangeText={setSearchQuery}
               />
               {!!searchQuery && (
                 <TouchableOpacity onPress={() => setSearchQuery('')}>
-                  <MaterialCommunityIcons name="close-circle" size={18} color={SLATE_300} />
+                  <MaterialCommunityIcons name="close-circle" size={18} color={secondaryTextColor} />
                 </TouchableOpacity>
               )}
             </View>
@@ -601,26 +622,26 @@ export default function AdminSettings() {
                 <ActivityIndicator size="large" color={GOLD} />
               </View>
             ) : filteredScholars.length === 0 ? (
-              <View style={styles.emptyCard}>
-                <MaterialCommunityIcons name="information-outline" size={44} color={SLATE_300} />
-                <Text style={styles.emptyTitle}>No scholars found</Text>
-                <Text style={styles.emptyText}>Try a different search keyword.</Text>
+              <View style={[styles.emptyCard, { backgroundColor: cardBgColor }]}>
+                <MaterialCommunityIcons name="information-outline" size={44} color={secondaryTextColor} />
+                <Text style={[styles.emptyTitle, { color: textColor }]}>No scholars found</Text>
+                <Text style={[styles.emptyText, { color: secondaryTextColor }]}>Try a different search keyword.</Text>
               </View>
             ) : (
               filteredScholars.map((scholar) => {
                 const isDeleting = deletingUid === scholar.uid;
 
                 return (
-                  <View key={scholar.uid} style={styles.scholarCard}>
+                  <View key={scholar.uid} style={[styles.scholarCard, { backgroundColor: cardBgColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.16)' : 'rgba(212, 175, 55, 0.08)' }]}>
                     <View style={styles.scholarTopRow}>
                       <View style={styles.avatarWrap}>
                         <MaterialCommunityIcons name="account" size={18} color={GOLD} />
                       </View>
 
                       <View style={styles.scholarInfo}>
-                        <Text style={styles.scholarName}>{scholar.fullName || 'Unknown Scholar'}</Text>
-                        <Text style={styles.scholarMeta}>{scholar.school || 'School not specified'}</Text>
-                        <Text style={styles.scholarMeta}>{scholar.email || 'No email'}</Text>
+                        <Text style={[styles.scholarName, { color: textColor }]}>{scholar.fullName || 'Unknown Scholar'}</Text>
+                        <Text style={[styles.scholarMeta, { color: secondaryTextColor }]}>{scholar.school || 'School not specified'}</Text>
+                        <Text style={[styles.scholarMeta, { color: secondaryTextColor }]}>{scholar.email || 'No email'}</Text>
                       </View>
                     </View>
 
@@ -648,21 +669,21 @@ export default function AdminSettings() {
 
         {activeTab === 'schools' && (
           <>
-            <Text style={styles.sectionTitle}>Manage Schools</Text>
+            <Text style={[styles.sectionTitle, { color: textColor }]}>Manage Schools</Text>
 
-            <View style={styles.summaryCard}>
-              <Text style={styles.summaryTitle}>School Dropdown Source</Text>
-              <Text style={styles.summaryText}>Add schools to control options shown on scholar signup.</Text>
-              <Text style={styles.summaryCount}>{schools.length} schools</Text>
+            <View style={[styles.summaryCard, { backgroundColor: cardBgColor }]}>
+              <Text style={[styles.summaryTitle, { color: textColor }]}>School Dropdown Source</Text>
+              <Text style={[styles.summaryText, { color: secondaryTextColor }]}>Add schools to control options shown on scholar signup.</Text>
+              <Text style={[styles.summaryCount, { color: GOLD }]}>{schools.length} schools</Text>
             </View>
 
-            <View style={styles.formCard}>
+            <View style={[styles.formCard, { backgroundColor: cardBgColor }]}>
               <View style={styles.formGroup}>
-                <Text style={styles.label}>School Name</Text>
+                <Text style={[styles.label, { color: textColor }]}>School Name</Text>
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, { color: textColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.16)' : 'rgba(212, 175, 55, 0.08)', backgroundColor: darkMode ? CARD_ALT_BG : '#f9f9f9' }]}
                   placeholder="Enter school name"
-                  placeholderTextColor={SLATE_300}
+                  placeholderTextColor={secondaryTextColor}
                   value={schoolNameInput}
                   onChangeText={setSchoolNameInput}
                 />
@@ -676,9 +697,9 @@ export default function AdminSettings() {
                 <MaterialCommunityIcons
                   name={savingSchool ? 'loading' : 'plus'}
                   size={16}
-                  color={OCEAN_DEEP}
+                  color={darkMode ? OCEAN_DEEP : '#f5f5f5'}
                 />
-                <Text style={styles.saveButtonText}>{savingSchool ? 'Adding...' : 'Add School'}</Text>
+                <Text style={[styles.saveButtonText, { color: darkMode ? OCEAN_DEEP : '#f5f5f5' }]}>{savingSchool ? 'Adding...' : 'Add School'}</Text>
               </TouchableOpacity>
             </View>
 
@@ -687,18 +708,18 @@ export default function AdminSettings() {
                 <ActivityIndicator size="large" color={GOLD} />
               </View>
             ) : schools.length === 0 ? (
-              <View style={styles.emptyCard}>
-                <MaterialCommunityIcons name="school-outline" size={44} color={SLATE_300} />
-                <Text style={styles.emptyTitle}>No schools added</Text>
-                <Text style={styles.emptyText}>Add a school to populate signup dropdown options.</Text>
+              <View style={[styles.emptyCard, { backgroundColor: cardBgColor }]}>
+                <MaterialCommunityIcons name="school-outline" size={44} color={secondaryTextColor} />
+                <Text style={[styles.emptyTitle, { color: textColor }]}>No schools added</Text>
+                <Text style={[styles.emptyText, { color: secondaryTextColor }]}>Add a school to populate signup dropdown options.</Text>
               </View>
             ) : (
               schools.map((schoolName) => {
                 const isDeleting = deletingSchoolName === schoolName;
 
                 return (
-                  <View key={schoolName} style={styles.schoolItemCard}>
-                    <Text style={styles.schoolItemName}>{schoolName}</Text>
+                  <View key={schoolName} style={[styles.schoolItemCard, { backgroundColor: cardBgColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.16)' : 'rgba(212, 175, 55, 0.08)' }]}>
+                    <Text style={[styles.schoolItemName, { color: textColor }]}>{schoolName}</Text>
 
                     <TouchableOpacity
                       style={[styles.schoolDeleteButton, isDeleting && styles.deleteButtonDisabled]}
@@ -709,9 +730,9 @@ export default function AdminSettings() {
                       <MaterialCommunityIcons
                         name="trash-can-outline"
                         size={14}
-                        color={isDeleting ? SLATE_300 : '#fecaca'}
+                        color={isDeleting ? secondaryTextColor : '#fecaca'}
                       />
-                      <Text style={[styles.schoolDeleteButtonText, isDeleting && styles.deleteButtonTextDisabled]}>
+                      <Text style={[styles.schoolDeleteButtonText, isDeleting && styles.deleteButtonTextDisabled, { color: isDeleting ? secondaryTextColor : '#fecaca' }]}>
                         {isDeleting ? 'Deleting...' : 'Delete'}
                       </Text>
                     </TouchableOpacity>
@@ -723,7 +744,7 @@ export default function AdminSettings() {
         )}
       </ScrollView>
 
-      <View style={styles.bottomNav}>
+      <View style={[styles.bottomNav, { backgroundColor: cardBgColor, borderTopColor: darkMode ? 'rgba(212, 175, 55, 0.16)' : 'rgba(212, 175, 55, 0.08)' }]}>
         {[
           ['home-outline', 'Home', false, handleGoHome],
           ['account-group-outline', 'Scholars', false, handleGoScholars],
@@ -732,8 +753,8 @@ export default function AdminSettings() {
           ['cog-outline', 'Settings', true, null],
         ].map(([icon, label, active, onPress]) => (
           <TouchableOpacity key={label} style={styles.navItem} activeOpacity={0.8} onPress={onPress || undefined}>
-            <MaterialCommunityIcons name={icon} size={20} color={active ? GOLD : SLATE_300} />
-            <Text style={[styles.navLabel, active && styles.navLabelActive]}>{label}</Text>
+            <MaterialCommunityIcons name={icon} size={20} color={active ? GOLD : secondaryTextColor} />
+            <Text style={[styles.navLabel, active && styles.navLabelActive, { color: active ? GOLD : secondaryTextColor }]}>{label}</Text>
           </TouchableOpacity>
         ))}
       </View>
@@ -779,6 +800,7 @@ const styles = {
   scroll: {
     paddingHorizontal: 16,
     paddingBottom: 110,
+    backgroundColor: OCEAN_DEEP,
   },
 
   // Tab Navigation Styles
@@ -1180,5 +1202,11 @@ const styles = {
   },
   navLabelActive: {
     color: GOLD,
+  },
+  darkModeToggle: {
+    borderRadius: 8,
+    padding: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 };

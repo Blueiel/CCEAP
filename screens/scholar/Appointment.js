@@ -21,6 +21,12 @@ const CARD_BG = '#0B2740';
 const CARD_ALT_BG = '#12324E';
 const SLATE_100 = '#f1f5f9';
 const SLATE_300 = '#cbd5e1';
+
+// Light mode colors
+const LIGHT_BG = '#f5f5f5';
+const LIGHT_CARD = '#ffffff';
+const LIGHT_TEXT = '#1a1a1a';
+const LIGHT_TEXT_SECONDARY = '#666666';
 const SUCCESS = '#4ade80';
 
 const compareSchedules = (a, b) => {
@@ -31,15 +37,26 @@ const compareSchedules = (a, b) => {
 
 export default function Appointment({ navigation }) {
   const [headerFirstName, setHeaderFirstName] = React.useState('Scholar');
+  const [darkMode, setDarkMode] = React.useState(false);
   const [loading, setLoading] = React.useState(true);
   const [saving, setSaving] = React.useState('');
   const [schedules, setSchedules] = React.useState([]);
   const [selectedScheduleId, setSelectedScheduleId] = React.useState('');
 
+  const handleDarkModeToggle = () => {
+    toggleDarkMode();
+  };
+
+  const backgroundColor = darkMode ? OCEAN_DEEP : LIGHT_BG;
+  const headerBgColor = darkMode ? OCEAN_DEEP : LIGHT_BG;
+  const cardBgColor = darkMode ? CARD_BG : LIGHT_CARD;
+  const textColor = darkMode ? SLATE_100 : LIGHT_TEXT;
+  const secondaryTextColor = darkMode ? SLATE_300 : LIGHT_TEXT_SECONDARY;
+
   const updateScheduleBookedCount = async (scheduleId, delta) => {
     if (!scheduleId || !delta) return;
 
-    await runTransaction(ref(database, `appointmentSchedules/${scheduleId}/bookedCount`), (current) => {
+    return runTransaction(ref(database, `appointmentSchedules/${scheduleId}/bookedCount`), (current) => {
       const next = Number(current || 0) + delta;
       return next < 0 ? 0 : next;
     });
@@ -169,26 +186,30 @@ export default function Appointment({ navigation }) {
   };
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <StatusBar style="light" />
+    <SafeAreaView style={[styles.safe, { backgroundColor }]}>
+      <StatusBar barStyle={darkMode ? 'light-content' : 'dark-content'} translucent={true} backgroundColor="transparent" />
 
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: headerBgColor }]}>
         <View style={styles.headerLeft}>
-          <Text style={styles.brand}>Hi, {headerFirstName}</Text>
+          <Text style={[styles.brand, { color: textColor }]}>Hi, {headerFirstName}</Text>
           <View style={styles.headerTag}>
             <Text style={styles.headerTagText}>ACTIVE SCHOLAR</Text>
           </View>
         </View>
+
+        <TouchableOpacity style={[styles.darkModeToggle, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleDarkModeToggle}>
+          <MaterialCommunityIcons name={darkMode ? 'white-balance-sunny' : 'moon-waning-crescent'} size={18} color={GOLD} />
+        </TouchableOpacity>
 
         <TouchableOpacity style={styles.notifButton} activeOpacity={0.85} onPress={handleLogout}>
           <MaterialCommunityIcons name="logout" size={22} color={GOLD} />
         </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={[styles.scroll, { backgroundColor }]} showsVerticalScrollIndicator={false}>
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Appointment Booking</Text>
-          <Text style={styles.subtitle}>
+          <Text style={[styles.sectionTitle, { color: textColor }]}>Appointment Booking</Text>
+          <Text style={[styles.subtitle, { color: secondaryTextColor }]}>
             {selectedScheduleId
               ? 'You already selected a schedule. Changes are disabled.'
               : 'Choose one schedule for passing your requirements.'}
@@ -200,10 +221,10 @@ export default function Appointment({ navigation }) {
             <ActivityIndicator size="large" color={GOLD} />
           </View>
         ) : schedules.length === 0 ? (
-          <View style={styles.emptyCard}>
-            <MaterialCommunityIcons name="calendar-blank-outline" size={44} color={SLATE_300} />
-            <Text style={styles.emptyTitle}>No schedules available</Text>
-            <Text style={styles.emptyText}>Wait for admin to publish schedules.</Text>
+          <View style={[styles.emptyCard, { backgroundColor: cardBgColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.16)' : 'rgba(212, 175, 55, 0.08)' }]}>
+            <MaterialCommunityIcons name="calendar-blank-outline" size={44} color={secondaryTextColor} />
+            <Text style={[styles.emptyTitle, { color: textColor }]}>No schedules available</Text>
+            <Text style={[styles.emptyText, { color: secondaryTextColor }]}>Wait for admin to publish schedules.</Text>
           </View>
         ) : (
           schedules.map((item) => {
@@ -213,18 +234,18 @@ export default function Appointment({ navigation }) {
             const isDisabled = isSaving || isSelected || (hasLockedSelection && !isSelected);
 
             return (
-              <View key={item.id} style={styles.scheduleCard}>
+              <View key={item.id} style={[styles.scheduleCard, { backgroundColor: cardBgColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.16)' : 'rgba(212, 175, 55, 0.08)' }]}>
                 <View style={styles.scheduleTop}>
-                  <View style={styles.iconWrap}>
+                  <View style={[styles.iconWrap, { backgroundColor: darkMode ? 'rgba(212, 175, 55, 0.12)' : 'rgba(212, 175, 55, 0.1)' }]}>
                     <MaterialCommunityIcons name="calendar-clock" size={20} color={GOLD} />
                   </View>
                   <View style={styles.scheduleInfo}>
-                    <Text style={styles.scheduleDate}>{item.date || 'No date'}</Text>
-                    <Text style={styles.scheduleMeta}>
+                    <Text style={[styles.scheduleDate, { color: textColor }]}>{item.date || 'No date'}</Text>
+                    <Text style={[styles.scheduleMeta, { color: secondaryTextColor }]}>
                       {item.startTime || '--'} - {item.endTime || '--'}
                     </Text>
-                    <Text style={styles.scheduleMeta}>{item.location || 'No location'}</Text>
-                    <Text style={styles.scheduleMeta}>Slots: {item.bookedCount || 0}/{item.slotLimit || 0}</Text>
+                    <Text style={[styles.scheduleMeta, { color: secondaryTextColor }]}>{item.location || 'No location'}</Text>
+                    <Text style={[styles.scheduleMeta, { color: secondaryTextColor }]}>Slots: {item.bookedCount || 0}/{item.slotLimit || 0}</Text>
                   </View>
                 </View>
 
@@ -253,7 +274,7 @@ export default function Appointment({ navigation }) {
         )}
       </ScrollView>
 
-      <View style={styles.bottomNav}>
+      <View style={[styles.bottomNav, { backgroundColor: cardBgColor, borderTopColor: darkMode ? 'rgba(212, 175, 55, 0.22)' : 'rgba(212, 175, 55, 0.1)' }]}>
         {[
           ['view-dashboard-outline', 'Status', false, handleGoStatus],
           ['calendar-check-outline', 'Appointment', true, null],
@@ -326,10 +347,22 @@ const styles = {
     alignItems: 'center',
     position: 'relative',
   },
+  darkModeToggle: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: CARD_BG,
+    borderWidth: 1,
+    borderColor: 'rgba(212, 175, 55, 0.24)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+  },
   scroll: {
     paddingHorizontal: 20,
     paddingTop: 16,
     paddingBottom: 110,
+    backgroundColor: OCEAN_DEEP,
   },
   section: {
     marginBottom: 14,

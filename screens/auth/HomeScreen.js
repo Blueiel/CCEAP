@@ -1,3 +1,4 @@
+import React from 'react';
 import { StatusBar } from 'expo-status-bar';
 import {
   StyleSheet,
@@ -9,14 +10,20 @@ import {
   Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 const { width } = Dimensions.get('window');
 
 const GOLD = '#D4AF37';
 const OCEAN_DEEP = '#001B2E';
 const PRIMARY = '#ec5b13';
+const CARD_BG = '#003550';
 const SLATE_300 = '#cbd5e1';
 const SLATE_100 = '#f1f5f9';
+const LIGHT_BG = '#f5f5f5';
+const LIGHT_CARD = '#ffffff';
+const LIGHT_TEXT = '#1a1a1a';
+const LIGHT_TEXT_SECONDARY = '#666666';
 const HERO_IMAGE_ASSET = Image.resolveAssetSource(require('../../assets/cceap.png'));
 const HERO_IMAGE_ASPECT_RATIO =
   HERO_IMAGE_ASSET?.width && HERO_IMAGE_ASSET?.height
@@ -24,32 +31,44 @@ const HERO_IMAGE_ASPECT_RATIO =
     : 4 / 3;
 
 export default function HomeScreen({ navigation }) {
+  const [darkMode, setDarkMode] = React.useState(false);
+
+  const handleDarkModeToggle = () => {
+    toggleDarkMode();
+  };
+
+  const backgroundColor = darkMode ? OCEAN_DEEP : LIGHT_BG;
+  const headerBgColor = darkMode ? OCEAN_DEEP : LIGHT_BG;
+  const cardBgColor = darkMode ? CARD_BG : LIGHT_CARD;
+  const textColor = darkMode ? SLATE_100 : LIGHT_TEXT;
+  const secondaryTextColor = darkMode ? SLATE_300 : LIGHT_TEXT_SECONDARY;
+
   return (
-    <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="light-content" backgroundColor={OCEAN_DEEP} />
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+    <SafeAreaView style={[styles.safe, { backgroundColor }]}>
+      <StatusBar barStyle={darkMode ? 'light-content' : 'dark-content'} translucent={true} backgroundColor="transparent" />
+      <ScrollView contentContainerStyle={[styles.scroll, { backgroundColor }]} showsVerticalScrollIndicator={false}>
         
         {/* Hero Section */}
         <View style={styles.heroContainer}>
           
           {/* Hero Image */}
           <View style={styles.imageWrapper}>
-            <View style={styles.imageGradientBorder}>
+            <View style={[styles.imageGradientBorder, { borderColor: darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(212, 175, 55, 0.2)' }]}>
               <Image
                 source={require('../../assets/cceap.png')}
                 style={styles.heroImage}
                 resizeMode="contain"
               />
-              <View style={styles.imageGradientOverlay} />
+              <View style={[styles.imageGradientOverlay, { backgroundColor: darkMode ? OCEAN_DEEP : LIGHT_BG }]} />
             </View>
           </View>
 
           {/* Branding */}
-          <Text style={styles.mainTitle}>SCHOLR</Text>
+          <Text style={[styles.mainTitle, { color: textColor }]}>SCHOLR</Text>
           
           <View style={styles.divider} />
           
-          <Text style={styles.subtitle}>
+          <Text style={[styles.subtitle, { color: secondaryTextColor }]}>
             The Definitive Tracking System for{`\n`}
             <Text style={styles.goldText}>CCEAP Scholars</Text>
           </Text>
@@ -65,11 +84,11 @@ export default function HomeScreen({ navigation }) {
             </TouchableOpacity>
             
             <TouchableOpacity 
-              style={styles.secondaryButton} 
+              style={[styles.secondaryButton, { borderColor: darkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(212, 175, 55, 0.2)' }]} 
               activeOpacity={0.8}
               onPress={() => navigation.navigate('Login')}
             >
-              <Text style={styles.secondaryButtonText}>LOG IN</Text>
+              <Text style={[styles.secondaryButtonText, { color: textColor }]}>LOG IN</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -87,6 +106,7 @@ const styles = StyleSheet.create({
   scroll: {
     flexGrow: 1,
     paddingHorizontal: 16,
+    backgroundColor: OCEAN_DEEP,
   },
   heroContainer: {
     flex: 1,
@@ -191,5 +211,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     letterSpacing: 1.5,
+  },
+  darkModeToggle: {
+    borderRadius: 8,
+    padding: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

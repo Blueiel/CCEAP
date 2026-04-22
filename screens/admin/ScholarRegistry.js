@@ -23,6 +23,13 @@ const CARD_ALT_BG = '#12324E';
 const GOLD = '#D4AF37';
 const SLATE_100 = '#f1f5f9';
 const SLATE_300 = '#cbd5e1';
+
+// Light mode colors
+const LIGHT_BG = '#f5f5f5';
+const LIGHT_CARD = '#ffffff';
+const LIGHT_TEXT = '#1a1a1a';
+const LIGHT_TEXT_SECONDARY = '#666666';
+
 const REQUIREMENT_IDS = ['1', '2', '3', '4'];
 
 const formatScholarName = (scholar = {}) => {
@@ -57,6 +64,7 @@ export default function ScholarRegistry() {
   const navigation = useNavigation();
   const route = useRoute();
   const [headerFullName, setHeaderFullName] = React.useState('');
+  const [darkMode, setDarkMode] = React.useState(false);
   const [schools, setSchools] = React.useState([]);
   const [activeRequirementIds, setActiveRequirementIds] = React.useState(REQUIREMENT_IDS);
   const [searchQuery, setSearchQuery] = React.useState('');
@@ -78,6 +86,16 @@ export default function ScholarRegistry() {
       { text: 'Log out', style: 'destructive', onPress: performLogout },
     ]);
   };
+
+  const handleDarkModeToggle = () => {
+    toggleDarkMode();
+  };
+
+  const backgroundColor = darkMode ? OCEAN_DEEP : LIGHT_BG;
+  const headerBgColor = darkMode ? OCEAN_DEEP : LIGHT_BG;
+  const cardBgColor = darkMode ? CARD_BG : LIGHT_CARD;
+  const textColor = darkMode ? SLATE_100 : LIGHT_TEXT;
+  const secondaryTextColor = darkMode ? SLATE_300 : LIGHT_TEXT_SECONDARY;
 
   const loadScholars = React.useCallback(async () => {
     try {
@@ -272,43 +290,43 @@ export default function ScholarRegistry() {
   const renderListHeader = () => (
     <>
       <View style={styles.summaryRow}>
-        <View style={styles.summaryCard}>
+        <View style={[styles.summaryCard, { backgroundColor: cardBgColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.18)' : 'rgba(212, 175, 55, 0.08)' }]}>
           <View style={styles.summaryLine}>
             <View style={styles.summaryLabelRow}>
               <MaterialCommunityIcons name="school-outline" size={13} color={GOLD} />
-              <Text style={styles.summaryLabel}>Schools</Text>
+              <Text style={[styles.summaryLabel, { color: secondaryTextColor }]}>Schools</Text>
             </View>
-            <Text style={styles.summaryValue} numberOfLines={1}>
+            <Text style={[styles.summaryValue, { color: textColor }]} numberOfLines={1}>
               {schools.length}
             </Text>
           </View>
         </View>
 
-        <View style={styles.summaryCard}>
+        <View style={[styles.summaryCard, { backgroundColor: cardBgColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.18)' : 'rgba(212, 175, 55, 0.08)' }]}>
           <View style={styles.summaryLine}>
             <View style={styles.summaryLabelRow}>
               <MaterialCommunityIcons name="account-outline" size={13} color={GOLD} />
-              <Text style={styles.summaryLabel}>Visible Scholars</Text>
+              <Text style={[styles.summaryLabel, { color: secondaryTextColor }]}>Visible Scholars</Text>
             </View>
-            <Text style={styles.summaryValue} numberOfLines={1}>
+            <Text style={[styles.summaryValue, { color: textColor }]} numberOfLines={1}>
               {visibleScholars}
             </Text>
           </View>
         </View>
       </View>
 
-      <View style={styles.searchWrap}>
-        <MaterialCommunityIcons name="magnify" size={18} color={SLATE_300} style={styles.searchIcon} />
+      <View style={[styles.searchWrap, { backgroundColor: cardBgColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.18)' : 'rgba(212, 175, 55, 0.08)' }]}>
+        <MaterialCommunityIcons name="magnify" size={18} color={secondaryTextColor} style={styles.searchIcon} />
         <TextInput
-          style={styles.searchInput}
+          style={[styles.searchInput, { color: textColor }]}
           placeholder="Search by name, email, or year level"
-          placeholderTextColor={SLATE_300}
+          placeholderTextColor={secondaryTextColor}
           value={searchQuery}
           onChangeText={setSearchQuery}
         />
         {!!searchQuery && (
           <TouchableOpacity onPress={() => setSearchQuery('')}>
-            <MaterialCommunityIcons name="close-circle" size={18} color={SLATE_300} />
+            <MaterialCommunityIcons name="close-circle" size={18} color={secondaryTextColor} />
           </TouchableOpacity>
         )}
       </View>
@@ -324,11 +342,11 @@ export default function ScholarRegistry() {
           return (
             <TouchableOpacity
               key={option}
-              style={[styles.filterChip, active && styles.filterChipActive]}
+              style={[styles.filterChip, { backgroundColor: active ? (darkMode ? 'rgba(212, 175, 55, 0.12)' : 'rgba(212, 175, 55, 0.05)') : cardBgColor, borderColor: active ? 'rgba(212, 175, 55, 0.35)' : (darkMode ? 'rgba(212, 175, 55, 0.2)' : 'rgba(212, 175, 55, 0.1)') }, active && styles.filterChipActive]}
               onPress={() => setSelectedSchool(option)}
               activeOpacity={0.85}
             >
-              <Text style={[styles.filterChipText, active && styles.filterChipTextActive]}>{option}</Text>
+              <Text style={[styles.filterChipText, { color: active ? GOLD : secondaryTextColor }]}>{option}</Text>
             </TouchableOpacity>
           );
         })}
@@ -338,14 +356,14 @@ export default function ScholarRegistry() {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.safe}>
-        <StatusBar style="light" />
-        <View style={styles.header}>
+      <SafeAreaView style={[styles.safe, { backgroundColor }]}>
+        <StatusBar barStyle={darkMode ? 'light-content' : 'dark-content'} translucent={true} backgroundColor="transparent" />
+        <View style={[styles.header, { backgroundColor }]}>
           <View style={styles.headerLeft}>
-            <Text style={styles.brand}>Hi, {headerFullName || 'Admin'}</Text>
+            <Text style={[styles.brand, { color: textColor }]}>Hi, {headerFullName || 'Admin'}</Text>
           </View>
 
-          <TouchableOpacity style={styles.notifButton} activeOpacity={0.85} onPress={handleLogout}>
+          <TouchableOpacity style={[styles.notifButton, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleLogout}>
             <MaterialCommunityIcons name="logout" size={22} color={GOLD} />
           </TouchableOpacity>
         </View>
@@ -358,54 +376,58 @@ export default function ScholarRegistry() {
   }
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <StatusBar style="light" />
-      <View style={styles.header}>
+    <SafeAreaView style={[styles.safe, { backgroundColor }]}>
+      <StatusBar barStyle={darkMode ? 'light-content' : 'dark-content'} translucent={true} backgroundColor="transparent" />
+      <View style={[styles.header, { backgroundColor }]}>
         <View style={styles.headerLeft}>
-          <Text style={styles.brand}>Hi, {headerFullName || 'Admin'}</Text>
+          <Text style={[styles.brand, { color: textColor }]}>Hi, {headerFullName || 'Admin'}</Text>
         </View>
 
-        <TouchableOpacity style={styles.notifButton} activeOpacity={0.85} onPress={handleLogout}>
+        <TouchableOpacity style={[styles.darkModeToggle, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleDarkModeToggle}>
+          <MaterialCommunityIcons name={darkMode ? 'white-balance-sunny' : 'moon-waning-crescent'} size={18} color={GOLD} />
+        </TouchableOpacity>
+
+        <TouchableOpacity style={[styles.notifButton, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleLogout}>
           <MaterialCommunityIcons name="logout" size={22} color={GOLD} />
         </TouchableOpacity>
       </View>
 
-      <View style={styles.content}>
+      <View style={[styles.content, { backgroundColor }]}>
         <ScrollView
-          style={styles.list}
+          style={[styles.list, { backgroundColor }]}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="none"
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={[styles.listContent, { backgroundColor }]}
         >
           {renderListHeader()}
 
           {flatRows.length === 0 ? (
             <View style={styles.emptyContainer}>
-              <MaterialCommunityIcons name="information-outline" size={50} color={SLATE_300} />
-              <Text style={styles.emptyText}>No scholars found</Text>
+              <MaterialCommunityIcons name="information-outline" size={50} color={secondaryTextColor} />
+              <Text style={[styles.emptyText, { color: secondaryTextColor }]}>No scholars found</Text>
             </View>
           ) : (
             flatRows.map((item) => {
               if (item.type === 'header') {
                 return (
-                  <View key={item.id} style={styles.schoolContainer}>
-                    <View style={styles.schoolHeader}>
+                  <View key={item.id} style={[styles.schoolContainer, { backgroundColor: cardBgColor, borderColor: darkMode ? CARD_ALT_BG : 'rgba(212, 175, 55, 0.08)' }]}>
+                    <View style={[styles.schoolHeader, { backgroundColor: darkMode ? 'rgba(11, 39, 64, 0.9)' : '#f0f0f0' }]}>
                       <View style={styles.schoolInfoRow}>
-                        <View style={styles.schoolIconWrap}>
+                        <View style={[styles.schoolIconWrap, { backgroundColor: darkMode ? 'rgba(212, 175, 55, 0.12)' : 'rgba(212, 175, 55, 0.06)' }]}>
                           <MaterialCommunityIcons name="school-outline" size={18} color={GOLD} />
                         </View>
 
                         <View style={styles.schoolInfo}>
-                          <Text style={styles.schoolName}>{item.title}</Text>
-                          <Text style={styles.scholarCount}>
+                          <Text style={[styles.schoolName, { color: textColor }]}>{item.title}</Text>
+                          <Text style={[styles.scholarCount, { color: secondaryTextColor }]}>
                             {item.count} {item.count === 1 ? 'scholar' : 'scholars'}
                           </Text>
                         </View>
                       </View>
 
-                      <View style={styles.schoolBadge}>
-                        <Text style={styles.badgeText}>{item.count}</Text>
+                      <View style={[styles.schoolBadge, { backgroundColor: GOLD }]}>
+                        <Text style={[styles.badgeText, { color: darkMode ? OCEAN_DEEP : '#ffffff' }]}>{item.count}</Text>
                       </View>
                     </View>
                   </View>
@@ -427,19 +449,19 @@ export default function ScholarRegistry() {
                     item.isLastInSection && styles.lastInSection,
                   ]}
                 >
-                  <View style={styles.scholarItem}>
-                    <View style={styles.scholarAvatar}>
+                  <View style={[styles.scholarItem, { backgroundColor: cardBgColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.14)' : 'rgba(212, 175, 55, 0.08)' }]}>
+                    <View style={[styles.scholarAvatar, { backgroundColor: darkMode ? 'rgba(11, 39, 64, 0.9)' : '#f0f0f0' }]}>
                       <MaterialCommunityIcons name="account" size={16} color={GOLD} />
                     </View>
 
                     <View style={styles.scholarDetails}>
-                      <Text style={styles.scholarName}>{displayName}</Text>
-                      {!!scholar.yearLevel && <Text style={styles.scholarYearLevel}>{scholar.yearLevel}</Text>}
+                      <Text style={[styles.scholarName, { color: textColor }]}>{displayName}</Text>
+                      {!!scholar.yearLevel && <Text style={[styles.scholarYearLevel, { color: GOLD }]}>{scholar.yearLevel}</Text>}
                     </View>
 
                     <View style={styles.scholarRightCol}>
-                      <View style={[styles.statusBadge, !isComplete && styles.statusBadgeIncomplete]}>
-                        <Text style={[styles.statusText, !isComplete && styles.statusTextIncomplete]}>
+                      <View style={[styles.statusBadge, !isComplete && styles.statusBadgeIncomplete, { backgroundColor: isComplete ? (darkMode ? 'rgba(212, 175, 55, 0.16)' : 'rgba(212, 175, 55, 0.1)') : (darkMode ? 'rgba(203, 213, 225, 0.12)' : 'rgba(203, 213, 225, 0.08)'), borderColor: isComplete ? 'rgba(212, 175, 55, 0.3)' : (darkMode ? 'rgba(203, 213, 225, 0.24)' : 'rgba(203, 213, 225, 0.16)') }]}>
+                        <Text style={[styles.statusText, !isComplete && styles.statusTextIncomplete, { color: isComplete ? GOLD : secondaryTextColor }]}>
                           {isComplete ? 'Complete' : 'Incomplete'}
                         </Text>
                       </View>
@@ -452,7 +474,7 @@ export default function ScholarRegistry() {
         </ScrollView>
       </View>
 
-      <View style={styles.bottomNav}>
+      <View style={[styles.bottomNav, { backgroundColor: cardBgColor, borderTopColor: darkMode ? 'rgba(212, 175, 55, 0.22)' : 'rgba(212, 175, 55, 0.1)' }]}>
         {[
           ['home-outline', 'Home', false, handleGoHome],
           ['account-group-outline', 'Scholars', true, null],
@@ -466,8 +488,8 @@ export default function ScholarRegistry() {
             activeOpacity={0.8}
             onPress={onPress || undefined}
           >
-            <MaterialCommunityIcons name={icon} size={20} color={active ? GOLD : SLATE_300} />
-            <Text style={[styles.navLabel, active && styles.navLabelActive]}>{label}</Text>
+            <MaterialCommunityIcons name={icon} size={20} color={active ? GOLD : secondaryTextColor} />
+            <Text style={[styles.navLabel, active && styles.navLabelActive, !active && { color: secondaryTextColor }]}>{label}</Text>
           </TouchableOpacity>
         ))}
       </View>
@@ -526,7 +548,6 @@ const styles = {
     paddingBottom: 110,
   },
   searchWrap: {
-    backgroundColor: CARD_BG,
     borderWidth: 1,
     borderColor: 'rgba(212, 175, 55, 0.18)',
     borderRadius: 12,
@@ -541,7 +562,6 @@ const styles = {
   },
   searchInput: {
     flex: 1,
-    color: SLATE_100,
     fontSize: 13,
     paddingVertical: 0,
   },
@@ -557,7 +577,6 @@ const styles = {
     borderRadius: 999,
     borderWidth: 1,
     borderColor: 'rgba(212, 175, 55, 0.2)',
-    backgroundColor: CARD_BG,
     marginRight: 8,
     justifyContent: 'center',
     alignItems: 'center',
@@ -567,7 +586,6 @@ const styles = {
     borderColor: 'rgba(212, 175, 55, 0.35)',
   },
   filterChipText: {
-    color: SLATE_300,
     fontSize: 12,
     fontWeight: '600',
     lineHeight: 16,
@@ -582,7 +600,6 @@ const styles = {
   },
   summaryCard: {
     width: '48%',
-    backgroundColor: CARD_BG,
     borderWidth: 1,
     borderColor: 'rgba(212, 175, 55, 0.18)',
     borderRadius: 12,
@@ -597,7 +614,6 @@ const styles = {
     minHeight: 24,
   },
   summaryValue: {
-    color: SLATE_100,
     fontSize: 17,
     fontWeight: '700',
     minWidth: 44,
@@ -611,7 +627,6 @@ const styles = {
     paddingRight: 6,
   },
   summaryLabel: {
-    color: SLATE_300,
     fontSize: 11,
     marginLeft: 5,
     flexShrink: 1,
@@ -629,14 +644,12 @@ const styles = {
   },
   emptyText: {
     fontSize: 16,
-    color: SLATE_300,
     marginTop: 12,
   },
   schoolContainer: {
     marginBottom: 6,
     borderRadius: 12,
     overflow: 'hidden',
-    backgroundColor: CARD_BG,
     borderWidth: 1,
     borderColor: CARD_ALT_BG,
     marginTop: 0,
@@ -647,7 +660,6 @@ const styles = {
     alignItems: 'center',
     paddingVertical: 12,
     paddingHorizontal: 14,
-    backgroundColor: 'rgba(11, 39, 64, 0.9)',
   },
   schoolInfoRow: {
     flexDirection: 'row',
@@ -658,7 +670,6 @@ const styles = {
     width: 32,
     height: 32,
     borderRadius: 10,
-    backgroundColor: 'rgba(212, 175, 55, 0.12)',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 10,
@@ -669,12 +680,10 @@ const styles = {
   schoolName: {
     fontSize: 15,
     fontWeight: '600',
-    color: SLATE_100,
     letterSpacing: 0.3,
   },
   scholarCount: {
     fontSize: 12,
-    color: SLATE_300,
     marginTop: 4,
   },
   schoolBadge: {
@@ -715,13 +724,11 @@ const styles = {
     borderRadius: 12,
     borderWidth: 1,
     borderColor: 'rgba(212, 175, 55, 0.14)',
-    backgroundColor: CARD_ALT_BG,
   },
   scholarAvatar: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: 'rgba(11, 39, 64, 0.9)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -732,7 +739,6 @@ const styles = {
   scholarName: {
     fontSize: 14,
     fontWeight: '600',
-    color: SLATE_100,
     lineHeight: 18,
   },
   scholarYearLevel: {
@@ -745,24 +751,19 @@ const styles = {
     alignItems: 'flex-end',
   },
   statusBadge: {
-    backgroundColor: 'rgba(212, 175, 55, 0.16)',
     borderRadius: 6,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderWidth: 1,
-    borderColor: 'rgba(212, 175, 55, 0.3)',
   },
   statusBadgeIncomplete: {
-    backgroundColor: 'rgba(203, 213, 225, 0.12)',
     borderColor: 'rgba(203, 213, 225, 0.24)',
   },
   statusText: {
     fontSize: 10,
     fontWeight: '700',
-    color: GOLD,
   },
   statusTextIncomplete: {
-    color: SLATE_300,
   },
   bottomNav: {
     position: 'absolute',
@@ -770,7 +771,6 @@ const styles = {
     right: 0,
     bottom: 0,
     height: 84,
-    backgroundColor: CARD_BG,
     borderTopWidth: 1,
     borderColor: 'rgba(212, 175, 55, 0.22)',
     paddingHorizontal: 12,
@@ -785,12 +785,17 @@ const styles = {
     alignItems: 'center',
   },
   navLabel: {
-    color: SLATE_300,
     fontSize: 10,
     fontWeight: '600',
     marginTop: 2,
   },
   navLabelActive: {
     color: GOLD,
+  },
+  darkModeToggle: {
+    borderRadius: 8,
+    padding: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 };

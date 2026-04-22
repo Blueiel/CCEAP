@@ -14,6 +14,7 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { ref, get } from 'firebase/database';
 import { signOut } from 'firebase/auth';
 import { auth, database } from '../../lib/firebase';
+import { useTheme } from '../../lib/ThemeContext';
 
 const GOLD = '#D4AF37';
 const OCEAN_DEEP = '#001B2E';
@@ -21,6 +22,12 @@ const CARD_BG = '#0B2740';
 const CARD_ALT_BG = '#12324E';
 const SLATE_100 = '#f1f5f9';
 const SLATE_300 = '#cbd5e1';
+
+// Light mode colors
+const LIGHT_BG = '#f5f5f5';
+const LIGHT_CARD = '#ffffff';
+const LIGHT_TEXT = '#1a1a1a';
+const LIGHT_TEXT_SECONDARY = '#666666';
 
 const formatTimeAgo = (timestamp) => {
   if (!timestamp || Number.isNaN(Number(timestamp))) {
@@ -43,6 +50,7 @@ export default function AlertsPage() {
   const [headerFullName, setHeaderFullName] = React.useState('');
   const [alerts, setAlerts] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
+  const [darkMode, setDarkMode] = React.useState(false);
 
   const performLogout = async () => {
     try {
@@ -206,20 +214,34 @@ export default function AlertsPage() {
   const handleGoReviews = () => navigation.replace('Reviews');
   const handleGoSettings = () => navigation.replace('AdminSettings');
 
+  const handleDarkModeToggle = () => {
+    toggleDarkMode();
+  };
+
+  const backgroundColor = darkMode ? OCEAN_DEEP : LIGHT_BG;
+  const headerBgColor = darkMode ? OCEAN_DEEP : LIGHT_BG;
+  const cardBgColor = darkMode ? CARD_BG : LIGHT_CARD;
+  const textColor = darkMode ? SLATE_100 : LIGHT_TEXT;
+  const secondaryTextColor = darkMode ? SLATE_300 : LIGHT_TEXT_SECONDARY;
+
   if (loading) {
     return (
-      <SafeAreaView style={styles.safe}>
+      <SafeAreaView style={[styles.safe, { backgroundColor }]}>
         <StatusBar style="light" />
 
-        <View style={styles.header}>
-          <View style={styles.headerLeft}>
-            <Text style={styles.brand}>Hi, {headerFullName || 'Admin'}</Text>
-          </View>
-
-          <TouchableOpacity style={styles.notifButton} activeOpacity={0.85} onPress={handleLogout}>
-            <MaterialCommunityIcons name="logout" size={22} color={GOLD} />
-          </TouchableOpacity>
+      <View style={[styles.header, { backgroundColor: headerBgColor }]}>
+        <View style={styles.headerLeft}>
+          <Text style={[styles.brand, { color: textColor }]}>Hi, {headerFullName || 'Admin'}</Text>
         </View>
+
+        <TouchableOpacity style={[styles.darkModeToggle, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleDarkModeToggle}>
+          <MaterialCommunityIcons name={darkMode ? 'white-balance-sunny' : 'moon-waning-crescent'} size={18} color={GOLD} />
+        </TouchableOpacity>
+
+        <TouchableOpacity style={[styles.notifButton, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleLogout}>
+          <MaterialCommunityIcons name="logout" size={22} color={GOLD} />
+        </TouchableOpacity>
+      </View>
 
         <View style={styles.loaderContainer}>
           <ActivityIndicator size="large" color={GOLD} />
@@ -229,53 +251,57 @@ export default function AlertsPage() {
   }
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={[styles.safe, { backgroundColor }]}>
       <StatusBar style="light" />
 
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: headerBgColor }]}>
         <View style={styles.headerLeft}>
-          <Text style={styles.brand}>Hi, {headerFullName || 'Admin'}</Text>
+          <Text style={[styles.brand, { color: textColor }]}>Hi, {headerFullName || 'Admin'}</Text>
         </View>
 
-        <TouchableOpacity style={styles.notifButton} activeOpacity={0.85} onPress={handleLogout}>
+        <TouchableOpacity style={[styles.darkModeToggle, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleDarkModeToggle}>
+          <MaterialCommunityIcons name={darkMode ? 'white-balance-sunny' : 'moon-waning-crescent'} size={18} color={GOLD} />
+        </TouchableOpacity>
+
+        <TouchableOpacity style={[styles.notifButton, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleLogout}>
           <MaterialCommunityIcons name="logout" size={22} color={GOLD} />
         </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        <Text style={styles.pageTitle}>System Alerts</Text>
+      <ScrollView contentContainerStyle={[styles.scroll, { backgroundColor }]} showsVerticalScrollIndicator={false}>
+        <Text style={[styles.pageTitle, { color: textColor }]}>System Alerts</Text>
 
         <View style={styles.summaryRow}>
-          <View style={styles.summaryCard}>
-            <Text style={styles.summaryValue}>{totalAlerts}</Text>
-            <Text style={styles.summaryLabel}>Total Alerts</Text>
+          <View style={[styles.summaryCard, { backgroundColor: cardBgColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.18)' : 'rgba(212, 175, 55, 0.1)' }]}>
+            <Text style={[styles.summaryValue, { color: textColor }]}>{totalAlerts}</Text>
+            <Text style={[styles.summaryLabel, { color: secondaryTextColor }]}>Total Alerts</Text>
           </View>
-          <View style={styles.summaryCard}>
-            <Text style={styles.summaryValue}>{newAccounts}</Text>
-            <Text style={styles.summaryLabel}>New Accounts</Text>
+          <View style={[styles.summaryCard, { backgroundColor: cardBgColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.18)' : 'rgba(212, 175, 55, 0.1)' }]}>
+            <Text style={[styles.summaryValue, { color: textColor }]}>{newAccounts}</Text>
+            <Text style={[styles.summaryLabel, { color: secondaryTextColor }]}>New Accounts</Text>
           </View>
-          <View style={styles.summaryCard}>
-            <Text style={styles.summaryValue}>{announcements}</Text>
-            <Text style={styles.summaryLabel}>Announcements</Text>
+          <View style={[styles.summaryCard, { backgroundColor: cardBgColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.18)' : 'rgba(212, 175, 55, 0.1)' }]}>
+            <Text style={[styles.summaryValue, { color: textColor }]}>{announcements}</Text>
+            <Text style={[styles.summaryLabel, { color: secondaryTextColor }]}>Announcements</Text>
           </View>
         </View>
 
         {alerts.length === 0 ? (
-          <View style={styles.emptyCard}>
-            <MaterialCommunityIcons name="bell-outline" size={44} color={SLATE_300} />
-            <Text style={styles.emptyTitle}>No alerts yet</Text>
-            <Text style={styles.emptyText}>System activity and announcements will appear here.</Text>
+          <View style={[styles.emptyCard, { backgroundColor: cardBgColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.16)' : 'rgba(212, 175, 55, 0.08)' }]}>
+            <MaterialCommunityIcons name="bell-outline" size={44} color={secondaryTextColor} />
+            <Text style={[styles.emptyTitle, { color: textColor }]}>No alerts yet</Text>
+            <Text style={[styles.emptyText, { color: secondaryTextColor }]}>System activity and announcements will appear here.</Text>
           </View>
         ) : (
           alerts.map((item) => (
-            <View key={item.id} style={styles.alertCard}>
-              <View style={[styles.iconWrap, { backgroundColor: CARD_ALT_BG }]}> 
+            <View key={item.id} style={[styles.alertCard, { backgroundColor: cardBgColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.16)' : 'rgba(212, 175, 55, 0.08)' }]}>
+              <View style={[styles.iconWrap, { backgroundColor: darkMode ? CARD_ALT_BG : 'rgba(212, 175, 55, 0.08)' }]}> 
                 <MaterialCommunityIcons name={item.icon} size={20} color={item.color} />
               </View>
 
               <View style={styles.alertContent}>
-                <Text style={styles.alertTitle}>{item.title}</Text>
-                <Text style={styles.alertBody}>{item.body}</Text>
+                <Text style={[styles.alertTitle, { color: textColor }]}>{item.title}</Text>
+                <Text style={[styles.alertBody, { color: secondaryTextColor }]}>{item.body}</Text>
                 <Text style={styles.alertTime}>{formatTimeAgo(item.timestamp)}</Text>
               </View>
             </View>
@@ -283,7 +309,7 @@ export default function AlertsPage() {
         )}
       </ScrollView>
 
-      <View style={styles.bottomNav}>
+      <View style={[styles.bottomNav, { backgroundColor: cardBgColor, borderTopColor: darkMode ? 'rgba(212, 175, 55, 0.22)' : 'rgba(212, 175, 55, 0.1)' }]}>
         {[
           ['home-outline', 'Home', false, handleGoHome],
           ['account-group-outline', 'Scholars', false, handleGoScholars],
@@ -297,8 +323,8 @@ export default function AlertsPage() {
             activeOpacity={0.8}
             onPress={onPress || undefined}
           >
-            <MaterialCommunityIcons name={icon} size={20} color={active ? GOLD : SLATE_300} />
-            <Text style={[styles.navLabel, active && styles.navLabelActive]}>{label}</Text>
+            <MaterialCommunityIcons name={icon} size={20} color={active ? GOLD : secondaryTextColor} />
+            <Text style={[styles.navLabel, active && styles.navLabelActive, !active && { color: secondaryTextColor }]}>{label}</Text>
           </TouchableOpacity>
         ))}
       </View>
@@ -310,6 +336,17 @@ const styles = {
   safe: {
     flex: 1,
     backgroundColor: OCEAN_DEEP,
+  },
+  darkModeToggle: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: CARD_BG,
+    borderWidth: 1,
+    borderColor: 'rgba(212, 175, 55, 0.24)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
   },
   header: {
     flexDirection: 'row',
