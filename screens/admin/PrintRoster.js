@@ -7,11 +7,15 @@ import {
 	ScrollView,
 	TouchableOpacity,
 	ActivityIndicator,
+	Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 import { get, ref, update } from 'firebase/database';
-import { database } from '../../lib/firebase';import { useTheme } from '../../lib/ThemeContext';
+import { signOut } from 'firebase/auth';
+import { auth, database } from '../../lib/firebase';
+import { useTheme } from '../../lib/ThemeContext';
 const GOLD = '#D4AF37';
 const OCEAN_DEEP = '#001B2E';
 const CARD_BG = '#0B2740';
@@ -72,19 +76,61 @@ const parseName = (scholar) => {
 	};
 };
 
-export default function PrintRoster() {
+export default function PrintRoster({ navigation }) {
+	const navObj = useNavigation();
 	const [isLoading, setIsLoading] = React.useState(true);
 	const [selectedSchool, setSelectedSchool] = React.useState('All');
 	const [selectedCashier, setSelectedCashier] = React.useState('All');
 	const [scholars, setScholars] = React.useState([]);
 	const [schools, setSchools] = React.useState([]);
 	const [cashiersInSchool, setCashiersInSchool] = React.useState([]);
-	const { darkMode } = useTheme();
+	const [headerFullName, setHeaderFullName] = React.useState('Admin');
+	const { darkMode, toggleDarkMode } = useTheme();
 
 	const backgroundColor = darkMode ? OCEAN_DEEP : LIGHT_BG;
+	const headerBgColor = darkMode ? OCEAN_DEEP : LIGHT_BG;
 	const cardBgColor = darkMode ? CARD_BG : LIGHT_CARD;
 	const textColor = darkMode ? SLATE_100 : LIGHT_TEXT;
 	const secondaryTextColor = darkMode ? SLATE_300 : LIGHT_TEXT_SECONDARY;
+
+	const performLogout = async () => {
+		try {
+			await signOut(auth);
+			navigation?.replace('Login');
+		} catch {
+			Alert.alert('Logout failed', 'Unable to log out right now. Please try again.');
+		}
+	};
+
+	const handleLogout = () => {
+		Alert.alert('Log out', 'Are you sure you want to log out?', [
+			{ text: 'Cancel', style: 'cancel' },
+			{ text: 'Log out', style: 'destructive', onPress: performLogout },
+		]);
+	};
+
+	const handleDarkModeToggle = () => {
+		toggleDarkMode();
+	};
+
+	React.useEffect(() => {
+		const loadUserData = async () => {
+			const user = auth.currentUser;
+			if (!user?.uid) {
+				setHeaderFullName('Admin');
+				return;
+			}
+			try {
+				const profileSnapshot = await get(ref(database, `users/${user.uid}`));
+				const profile = profileSnapshot.exists() ? profileSnapshot.val() : null;
+				const fullName = profile?.fullName?.trim() || user?.displayName?.trim() || 'Admin';
+				setHeaderFullName(fullName);
+			} catch {
+				setHeaderFullName(user?.displayName?.trim() || 'Admin');
+			}
+		};
+		loadUserData();
+	}, []);
 
 	React.useEffect(() => {
 		const loadRoster = async () => {
@@ -263,8 +309,25 @@ export default function PrintRoster() {
 		<SafeAreaView style={[styles.safe, { backgroundColor }]}>
 			<StatusBar barStyle={darkMode ? 'light-content' : 'dark-content'} translucent={true} backgroundColor="transparent" />
 
-			<View style={[styles.header, { backgroundColor }]}>
-				<Text style={[styles.headerTitle, { color: textColor }]}>Print Roster</Text>
+			<View style={[styles.header, { backgroundColor: headerBgColor }]}>
+				<TouchableOpacity style={styles.iconButton} activeOpacity={0.85} onPress={() => navigation.goBack()}>
+					<MaterialCommunityIcons name="arrow-left" size={22} color={GOLD} />
+				</TouchableOpacity>
+
+				<View style={styles.headerCenter}>
+					<Text style={[styles.brand, { color: textColor }]}>Print Roster</Text>
+					<Text style={[styles.headerSubtitle, { color: secondaryTextColor }]}>Hi, {headerFullName || 'Admin'}</Text>
+				</View>
+
+				<View style={styles.headerActions}>
+					<TouchableOpacity style={[styles.darkModeToggle, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleDarkModeToggle}>
+						<MaterialCommunityIcons name={darkMode ? 'white-balance-sunny' : 'moon-waning-crescent'} size={18} color={GOLD} />
+					</TouchableOpacity>
+
+					<TouchableOpacity style={styles.iconButton} activeOpacity={0.85} onPress={handleLogout}>
+						<MaterialCommunityIcons name="logout" size={20} color={GOLD} />
+					</TouchableOpacity>
+				</View>
 			</View>
 
 			{isLoading ? (
@@ -358,16 +421,49 @@ const styles = StyleSheet.create({
 	safe: {
 		flex: 1,
 	},
+	darkModeToggle: {
+		width: 38,
+		height: 38,
+		borderRadius: 19,
+		borderWidth: 1,
+		borderColor: 'rgba(212, 175, 55, 0.24)',
+		justifyContent: 'center',
+		alignItems: 'center',
+		marginRight: 3,
+	},
 	header: {
-		paddingHorizontal: 20,
-		paddingTop: 12,
-		paddingBottom: 10,
+		flexDirection: 'row',
+		alignItems: 'center',
+		justifyContent: 'space-between',
 		borderBottomWidth: 1,
 		borderBottomColor: 'rgba(212, 175, 55, 0.2)',
+		paddingHorizontal: 16,
+		paddingVertical: 10,
 	},
-	headerTitle: {
-		fontSize: 22,
+	iconButton: {
+		width: 38,
+		height: 38,
+		borderRadius: 19,
+		borderWidth: 1,
+		borderColor: 'rgba(212, 175, 55, 0.24)',
+		justifyContent: 'center',
+		alignItems: 'center',
+	},
+	headerCenter: {
+		flex: 1,
+		marginHorizontal: 10,
+	},
+	headerActions: {
+		flexDirection: 'row',
+		alignItems: 'center',
+	},
+	brand: {
+		fontSize: 18,
 		fontWeight: '700',
+	},
+	headerSubtitle: {
+		fontSize: 11,
+		marginTop: 2,
 	},
 	loaderWrap: {
 		flex: 1,

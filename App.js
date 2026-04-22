@@ -155,6 +155,8 @@ export default function App() {
             options={SCHOLAR_MODULE_TRANSITION}
           />
         </Stack.Navigator>
-      </NavigationContainer>      </ThemeProvider>    </SafeAreaProvider>
+      </NavigationContainer>
+      </ThemeProvider>
+    </SafeAreaProvider>
   );
 }

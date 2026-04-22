@@ -44,6 +44,7 @@ const normalizeCashier = (item, index) => ({
 
 export default function CashierSetup() {
   const navigation = useNavigation();
+  const { darkMode, toggleDarkMode } = useTheme();
   const [headerFullName, setHeaderFullName] = React.useState('Admin');
   const [loading, setLoading] = React.useState(true);
   const [saving, setSaving] = React.useState(false);
@@ -53,7 +54,6 @@ export default function CashierSetup() {
   const [schoolOptions, setSchoolOptions] = React.useState([]);
   const [isSchoolDropdownOpen, setIsSchoolDropdownOpen] = React.useState(false);
   const [cashiers, setCashiers] = React.useState([]);
-  const [darkMode, setDarkMode] = React.useState(false);
 
   const performLogout = async () => {
     try {
@@ -228,13 +228,15 @@ export default function CashierSetup() {
           <Text style={[styles.headerSubtitle, { color: secondaryTextColor }]}>Hi, {headerFullName || 'Admin'}</Text>
         </View>
 
-        <TouchableOpacity style={[styles.darkModeToggle, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleDarkModeToggle}>
-          <MaterialCommunityIcons name={darkMode ? 'white-balance-sunny' : 'moon-waning-crescent'} size={18} color={GOLD} />
-        </TouchableOpacity>
+        <View style={styles.headerActions}>
+          <TouchableOpacity style={[styles.darkModeToggle, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleDarkModeToggle}>
+            <MaterialCommunityIcons name={darkMode ? 'white-balance-sunny' : 'moon-waning-crescent'} size={18} color={GOLD} />
+          </TouchableOpacity>
 
-        <TouchableOpacity style={styles.iconButton} activeOpacity={0.85} onPress={handleLogout}>
-          <MaterialCommunityIcons name="logout" size={20} color={GOLD} />
-        </TouchableOpacity>
+          <TouchableOpacity style={styles.iconButton} activeOpacity={0.85} onPress={handleLogout}>
+            <MaterialCommunityIcons name="logout" size={20} color={GOLD} />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {loading ? (
@@ -387,7 +389,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(212, 175, 55, 0.24)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 10,
+    marginRight: 3,
   },
   header: {
     flexDirection: 'row',
@@ -411,6 +413,10 @@ const styles = StyleSheet.create({
   headerCenter: {
     flex: 1,
     marginHorizontal: 10,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   brand: {
     fontSize: 18,

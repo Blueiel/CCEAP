@@ -15,6 +15,7 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { ref, get, set, update, remove, serverTimestamp } from 'firebase/database';
 import { signOut, reauthenticateWithCredential, EmailAuthProvider, updatePassword, updateProfile } from 'firebase/auth';
 import { auth, database } from '../../lib/firebase';
+import { useTheme } from '../../lib/ThemeContext';
 
 const GOLD = '#D4AF37';
 const OCEAN_DEEP = '#001B2E';
@@ -31,8 +32,8 @@ const LIGHT_TEXT_SECONDARY = '#666666';
 
 export default function AdminSettings() {
   const navigation = useNavigation();
+  const { darkMode, toggleDarkMode } = useTheme();
   const [headerFullName, setHeaderFullName] = React.useState('');
-  const [darkMode, setDarkMode] = React.useState(false);
   const [scholars, setScholars] = React.useState([]);
   const [schools, setSchools] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
@@ -410,13 +411,15 @@ export default function AdminSettings() {
           <Text style={[styles.brand, { color: textColor }]}>Hi, {headerFullName || 'Admin'}</Text>
         </View>
 
-        <TouchableOpacity style={[styles.darkModeToggle, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleDarkModeToggle}>
-          <MaterialCommunityIcons name={darkMode ? 'white-balance-sunny' : 'moon-waning-crescent'} size={18} color={GOLD} />
-        </TouchableOpacity>
+        <View style={styles.headerActions}>
+          <TouchableOpacity style={[styles.darkModeToggle, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleDarkModeToggle}>
+            <MaterialCommunityIcons name={darkMode ? 'white-balance-sunny' : 'moon-waning-crescent'} size={18} color={GOLD} />
+          </TouchableOpacity>
 
-        <TouchableOpacity style={[styles.notifButton, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleLogout}>
-          <MaterialCommunityIcons name="logout" size={22} color={GOLD} />
-        </TouchableOpacity>
+          <TouchableOpacity style={[styles.notifButton, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleLogout}>
+            <MaterialCommunityIcons name="logout" size={22} color={GOLD} />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <ScrollView contentContainerStyle={[styles.scroll, { backgroundColor }]} showsVerticalScrollIndicator={false}>
@@ -778,6 +781,10 @@ const styles = {
     paddingVertical: 12,
   },
   headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  headerActions: {
     flexDirection: 'row',
     alignItems: 'center',
   },
@@ -1204,9 +1211,14 @@ const styles = {
     color: GOLD,
   },
   darkModeToggle: {
-    borderRadius: 8,
-    padding: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
+    width: 38,
+		height: 38,
+		borderRadius: 19,
+		backgroundColor: CARD_BG,
+		borderWidth: 1,
+		borderColor: 'rgba(212, 175, 55, 0.24)',
+		justifyContent: 'center',
+		alignItems: 'center',
+		marginRight: 3,
   },
 };

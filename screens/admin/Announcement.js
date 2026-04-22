@@ -32,11 +32,11 @@ const LIGHT_TEXT_SECONDARY = '#666666';
 
 export default function Announcement() {
   const navigation = useNavigation();
+  const { darkMode, toggleDarkMode } = useTheme();
   const [headerFullName, setHeaderFullName] = React.useState('');
   const [title, setTitle] = React.useState('');
   const [message, setMessage] = React.useState('');
   const [posting, setPosting] = React.useState(false);
-  const [darkMode, setDarkMode] = React.useState(false);
 
   const performLogout = async () => {
     try {
@@ -124,7 +124,7 @@ export default function Announcement() {
   const handleGoSettings = () => navigation.replace('AdminSettings');
 
   const handleDarkModeToggle = () => {
-    setDarkMode(!darkMode);
+    toggleDarkMode();
   };
 
   const backgroundColor = darkMode ? OCEAN_DEEP : LIGHT_BG;
@@ -142,13 +142,15 @@ export default function Announcement() {
           <Text style={[styles.brand, { color: textColor }]}>Hi, {headerFullName || 'Admin'}</Text>
         </View>
 
-        <TouchableOpacity style={[styles.darkModeToggle, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleDarkModeToggle}>
-          <MaterialCommunityIcons name={darkMode ? 'white-balance-sunny' : 'moon-waning-crescent'} size={18} color={GOLD} />
-        </TouchableOpacity>
+        <View style={styles.headerActions}>
+          <TouchableOpacity style={[styles.darkModeToggle, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleDarkModeToggle}>
+            <MaterialCommunityIcons name={darkMode ? 'white-balance-sunny' : 'moon-waning-crescent'} size={18} color={GOLD} />
+          </TouchableOpacity>
 
-        <TouchableOpacity style={[styles.notifButton, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleLogout}>
-          <MaterialCommunityIcons name="logout" size={22} color={GOLD} />
-        </TouchableOpacity>
+          <TouchableOpacity style={[styles.notifButton, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleLogout}>
+            <MaterialCommunityIcons name="logout" size={22} color={GOLD} />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <ScrollView contentContainerStyle={[styles.scroll, { backgroundColor }]} showsVerticalScrollIndicator={false}>
@@ -229,7 +231,7 @@ const styles = {
     borderColor: 'rgba(212, 175, 55, 0.24)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 10,
+    marginRight: 3,
   },
   header: {
     flexDirection: 'row',
@@ -242,6 +244,10 @@ const styles = {
     paddingVertical: 12,
   },
   headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  headerActions: {
     flexDirection: 'row',
     alignItems: 'center',
   },

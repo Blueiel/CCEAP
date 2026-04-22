@@ -16,6 +16,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { auth, database } from '../../lib/firebase';
 import { get, ref } from 'firebase/database';
 import { signOut } from 'firebase/auth';
+import { useTheme } from '../../lib/ThemeContext';
 
 const GOLD = '#D4AF37';
 const OCEAN_DEEP = '#001B2E';
@@ -63,6 +64,7 @@ const normalizeRequirement = (item, index) => ({
 });
 
 export default function ScholarDashboard({ navigation }) {
+	const { darkMode, toggleDarkMode } = useTheme();
 	const [headerFirstName, setHeaderFirstName] = React.useState('Scholar');
 	const [scholarName, setScholarName] = React.useState('Scholar User');
 	const [scholarSchool, setScholarSchool] = React.useState('School not set');
@@ -71,7 +73,6 @@ export default function ScholarDashboard({ navigation }) {
 	const [grantClaimingLocation, setGrantClaimingLocation] = React.useState('Location to be announced');
 	const [claimingQueueNumber, setClaimingQueueNumber] = React.useState('Not set');
 	const [assignedCashierName, setAssignedCashierName] = React.useState('Not assigned');
-	const [darkMode, setDarkMode] = React.useState(false);
 	const [requirementsChecklist, setRequirementsChecklist] = React.useState(
 		DEFAULT_REQUIREMENTS_CHECKLIST.map((item, index) => ({
 			...normalizeRequirement(item, index),
@@ -296,13 +297,15 @@ export default function ScholarDashboard({ navigation }) {
 					</View>
 				</View>
 
-				<TouchableOpacity style={[styles.darkModeToggle, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleDarkModeToggle}>
-					<MaterialCommunityIcons name={darkMode ? 'white-balance-sunny' : 'moon-waning-crescent'} size={18} color={GOLD} />
-				</TouchableOpacity>
+				<View style={styles.headerActions}>
+					<TouchableOpacity style={[styles.darkModeToggle, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleDarkModeToggle}>
+						<MaterialCommunityIcons name={darkMode ? 'white-balance-sunny' : 'moon-waning-crescent'} size={18} color={GOLD} />
+					</TouchableOpacity>
 
-				<TouchableOpacity style={[styles.notifButton, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleLogout}>
-					<MaterialCommunityIcons name="logout" size={22} color={GOLD} />
-				</TouchableOpacity>
+					<TouchableOpacity style={[styles.notifButton, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleLogout}>
+						<MaterialCommunityIcons name="logout" size={22} color={GOLD} />
+					</TouchableOpacity>
+				</View>
 			</View>
 
 			<ScrollView contentContainerStyle={[styles.scroll, { backgroundColor }]} showsVerticalScrollIndicator={false}>
@@ -459,6 +462,10 @@ const styles = StyleSheet.create({
 		flexDirection: 'row',
 		alignItems: 'center',
 	},
+	headerActions: {
+		flexDirection: 'row',
+		alignItems: 'center',
+	},
 	profileWrap: {
 		width: 40,
 		height: 40,
@@ -503,7 +510,7 @@ const styles = StyleSheet.create({
 		borderColor: 'rgba(212, 175, 55, 0.24)',
 		justifyContent: 'center',
 		alignItems: 'center',
-		marginRight: 10,
+		marginRight: 3,
 	},
 	notifButton: {
 		width: 38,

@@ -67,8 +67,8 @@ const getDefaultRequirements = () =>
 
 export default function RequirementsSetup() {
   const navigation = useNavigation();
+  const { darkMode, toggleDarkMode } = useTheme();
   const [headerFullName, setHeaderFullName] = React.useState('');
-  const [darkMode, setDarkMode] = React.useState(false);
   const [loading, setLoading] = React.useState(true);
   const [saving, setSaving] = React.useState(false);
   const [requirements, setRequirements] = React.useState([]);
@@ -278,13 +278,15 @@ export default function RequirementsSetup() {
           <Text style={[styles.headerSubtitle, { color: secondaryTextColor }]}>Hi, {headerFullName || 'Admin'}</Text>
         </View>
 
-        <TouchableOpacity style={[styles.darkModeToggle, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleDarkModeToggle}>
-          <MaterialCommunityIcons name={darkMode ? 'white-balance-sunny' : 'moon-waning-crescent'} size={18} color={GOLD} />
-        </TouchableOpacity>
+        <View style={styles.headerActions}>
+          <TouchableOpacity style={[styles.darkModeToggle, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleDarkModeToggle}>
+            <MaterialCommunityIcons name={darkMode ? 'white-balance-sunny' : 'moon-waning-crescent'} size={18} color={GOLD} />
+          </TouchableOpacity>
 
-        <TouchableOpacity style={styles.iconButton} activeOpacity={0.85} onPress={handleLogout}>
-          <MaterialCommunityIcons name="logout" size={22} color={GOLD} />
-        </TouchableOpacity>
+          <TouchableOpacity style={styles.iconButton} activeOpacity={0.85} onPress={handleLogout}>
+            <MaterialCommunityIcons name="logout" size={22} color={GOLD} />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {loading ? (
@@ -417,6 +419,10 @@ const styles = StyleSheet.create({
   headerCenter: {
     flex: 1,
     paddingHorizontal: 10,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   brand: {
     fontSize: 18,

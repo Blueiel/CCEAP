@@ -16,6 +16,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { ref, set, get, serverTimestamp } from 'firebase/database';
 import { auth, database } from '../../lib/firebase';
+import { useTheme } from '../../lib/ThemeContext';
 
 const GOLD = '#D4AF37';
 const OCEAN_DEEP = '#001B2E';
@@ -57,15 +58,20 @@ export default function SignupScreen({ navigation }) {
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [confirmPassword, setConfirmPassword] = React.useState('');
-  const [darkMode, setDarkMode] = React.useState(false);
+  const { darkMode, setDarkMode } = useTheme();
   const [schoolOptions, setSchoolOptions] = React.useState([]);
   const [loadingSchools, setLoadingSchools] = React.useState(true);
   const [showPassword, setShowPassword] = React.useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
+  React.useEffect(() => {
+    // Force light mode for auth screens
+    setDarkMode(false);
+  }, [setDarkMode]);
+
   const handleDarkModeToggle = () => {
-    toggleDarkMode();
+    setDarkMode(false);
   };
 
   const backgroundColor = darkMode ? OCEAN_DEEP : LIGHT_BG;
@@ -243,23 +249,23 @@ export default function SignupScreen({ navigation }) {
 
           <View style={styles.inputGroup}>
             <Text style={[styles.label, { color: textColor }]}>School</Text>
-            <View style={[styles.pickerWrapper, { borderColor: darkMode ? 'rgba(212, 175, 55, 0.2)' : 'rgba(212, 175, 55, 0.15)' }]}>
+            <View style={[styles.pickerWrapper, { backgroundColor: darkMode ? CARD_ALT_BG : '#f9f9f9', borderColor: darkMode ? 'rgba(212, 175, 55, 0.2)' : 'rgba(212, 175, 55, 0.15)' }]}>
               <MaterialCommunityIcons name="school-outline" size={20} color={GOLD} style={styles.pickerIconLeft} />
               <Picker
                 selectedValue={school}
                 onValueChange={setSchool}
-                style={[styles.picker, { color: textColor }]}
+                style={[styles.picker, { color: textColor, backgroundColor: darkMode ? CARD_ALT_BG : '#f9f9f9' }]}
                 dropdownIconColor={GOLD}
                 mode="dropdown"
-                itemStyle={[styles.pickerItem, { color: darkMode ? SLATE_100 : LIGHT_TEXT }]}
+                itemStyle={[styles.pickerItem, { color: darkMode ? SLATE_100 : LIGHT_TEXT, backgroundColor: darkMode ? CARD_ALT_BG : '#f9f9f9' }]}
               >
                 <Picker.Item
                   label={loadingSchools ? 'Loading schools...' : schoolOptions.length ? 'Select School' : 'No schools available'}
                   value=""
-                  color={darkMode ? SLATE_300 : LIGHT_TEXT_SECONDARY}
+                  color={darkMode ? SLATE_300 : '#000000'}
                 />
                 {schoolOptions.map((schoolName) => (
-                  <Picker.Item key={schoolName} label={schoolName} value={schoolName} color={darkMode ? SLATE_100 : LIGHT_TEXT} />
+                  <Picker.Item key={schoolName} label={schoolName} value={schoolName} color={darkMode ? SLATE_100 : '#000000'} />
                 ))}
               </Picker>
             </View>
@@ -270,21 +276,21 @@ export default function SignupScreen({ navigation }) {
 
           <View style={styles.inputGroup}>
             <Text style={[styles.label, { color: textColor }]}>Year Level</Text>
-            <View style={[styles.pickerWrapper, { borderColor: darkMode ? 'rgba(212, 175, 55, 0.2)' : 'rgba(212, 175, 55, 0.15)' }]}>
+            <View style={[styles.pickerWrapper, { backgroundColor: darkMode ? CARD_ALT_BG : '#f9f9f9', borderColor: darkMode ? 'rgba(212, 175, 55, 0.2)' : 'rgba(212, 175, 55, 0.15)' }]}>
               <MaterialCommunityIcons name="clipboard-outline" size={20} color={GOLD} style={styles.pickerIconLeft} />
               <Picker
                 selectedValue={yearLevel}
                 onValueChange={setYearLevel}
-                style={[styles.picker, { color: textColor }]}
+                style={[styles.picker, { color: textColor, backgroundColor: darkMode ? CARD_ALT_BG : '#f9f9f9' }]}
                 dropdownIconColor={GOLD}
                 mode="dropdown"
-                itemStyle={[styles.pickerItem, { color: darkMode ? SLATE_100 : LIGHT_TEXT }]}
+                itemStyle={[styles.pickerItem, { color: darkMode ? SLATE_100 : LIGHT_TEXT, backgroundColor: darkMode ? CARD_ALT_BG : '#f9f9f9' }]}
               >
-                <Picker.Item label="Select Year Level" value="" color={darkMode ? SLATE_300 : LIGHT_TEXT_SECONDARY} />
-                <Picker.Item label="1st Year" value="1st Year" color={darkMode ? SLATE_100 : LIGHT_TEXT} />
-                <Picker.Item label="2nd Year" value="2nd Year" color={darkMode ? SLATE_100 : LIGHT_TEXT} />
-                <Picker.Item label="3rd Year" value="3rd Year" color={darkMode ? SLATE_100 : LIGHT_TEXT} />
-                <Picker.Item label="4th Year" value="4th Year" color={darkMode ? SLATE_100 : LIGHT_TEXT} />
+                <Picker.Item label="Select Year Level" value="" color={darkMode ? SLATE_300 : '#000000'} />
+                <Picker.Item label="1st Year" value="1st Year" color={darkMode ? SLATE_100 : '#000000'} />
+                <Picker.Item label="2nd Year" value="2nd Year" color={darkMode ? SLATE_100 : '#000000'} />
+                <Picker.Item label="3rd Year" value="3rd Year" color={darkMode ? SLATE_100 : '#000000'} />
+                <Picker.Item label="4th Year" value="4th Year" color={darkMode ? SLATE_100 : '#000000'} />
               </Picker>
             </View>
             <Text style={[styles.helperText, { color: secondaryTextColor }]}>Scroll to select your year level</Text>

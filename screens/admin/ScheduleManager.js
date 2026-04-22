@@ -47,6 +47,7 @@ const formatTimeValue = (value) =>
 
 export default function ScheduleManager() {
   const navigation = useNavigation();
+  const { darkMode, toggleDarkMode } = useTheme();
   const DateTimePickerModule = React.useMemo(() => {
     try {
       return require('@react-native-community/datetimepicker');
@@ -57,7 +58,6 @@ export default function ScheduleManager() {
   const NativeDateTimePicker = DateTimePickerModule?.default || null;
 
   const [headerFullName, setHeaderFullName] = React.useState('');
-  const [darkMode, setDarkMode] = React.useState(false);
   const [loading, setLoading] = React.useState(true);
   const [saving, setSaving] = React.useState(false);
   const [schedules, setSchedules] = React.useState([]);
@@ -442,13 +442,15 @@ export default function ScheduleManager() {
           <Text style={[styles.brand, { color: textColor }]}>Hi, {headerFullName || 'Admin'}</Text>
         </View>
 
-        <TouchableOpacity style={[styles.darkModeToggle, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleDarkModeToggle}>
-          <MaterialCommunityIcons name={darkMode ? 'white-balance-sunny' : 'moon-waning-crescent'} size={18} color={GOLD} />
-        </TouchableOpacity>
+        <View style={styles.headerActions}>
+          <TouchableOpacity style={[styles.darkModeToggle, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleDarkModeToggle}>
+            <MaterialCommunityIcons name={darkMode ? 'white-balance-sunny' : 'moon-waning-crescent'} size={18} color={GOLD} />
+          </TouchableOpacity>
 
-        <TouchableOpacity style={[styles.notifButton, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleLogout}>
-          <MaterialCommunityIcons name="logout" size={22} color={GOLD} />
-        </TouchableOpacity>
+          <TouchableOpacity style={[styles.notifButton, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleLogout}>
+            <MaterialCommunityIcons name="logout" size={22} color={GOLD} />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <ScrollView contentContainerStyle={[styles.scroll, { backgroundColor }]} showsVerticalScrollIndicator={false}>
@@ -526,16 +528,16 @@ export default function ScheduleManager() {
 
           <View style={styles.row}>
             <View style={styles.col}>
-              <Text style={styles.label}>Start Time</Text>
+              <Text style={[styles.label, { color: secondaryTextColor }]}>Start Time</Text>
               {NativeDateTimePicker ? (
                 <>
                   <TouchableOpacity
-                    style={styles.pickerField}
+                    style={[styles.pickerField, { backgroundColor: darkMode ? CARD_ALT_BG : '#f9f9f9', borderColor: darkMode ? 'rgba(212, 175, 55, 0.2)' : 'rgba(212, 175, 55, 0.1)' }]}
                     activeOpacity={0.85}
                     onPress={() => setShowStartTimePicker(true)}
                   >
                     <MaterialCommunityIcons name="clock-time-four-outline" size={18} color={GOLD} />
-                    <Text style={startTime ? styles.pickerText : styles.pickerPlaceholder}>
+                    <Text style={[startTime ? styles.pickerText : styles.pickerPlaceholder, { color: startTime ? textColor : secondaryTextColor }]}>
                       {startTime || 'Select start'}
                     </Text>
                   </TouchableOpacity>
@@ -552,26 +554,26 @@ export default function ScheduleManager() {
                 </>
               ) : (
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, { color: textColor, backgroundColor: darkMode ? CARD_ALT_BG : '#f9f9f9', borderColor: darkMode ? 'rgba(212, 175, 55, 0.2)' : 'rgba(212, 175, 55, 0.1)' }]}
                   value={startTime}
                   onChangeText={setStartTime}
                   placeholder="08:00 AM"
-                  placeholderTextColor={SLATE_300}
+                  placeholderTextColor={secondaryTextColor}
                 />
               )}
             </View>
 
             <View style={styles.col}>
-              <Text style={styles.label}>End Time</Text>
+              <Text style={[styles.label, { color: secondaryTextColor }]}>End Time</Text>
               {NativeDateTimePicker ? (
                 <>
                   <TouchableOpacity
-                    style={styles.pickerField}
+                    style={[styles.pickerField, { backgroundColor: darkMode ? CARD_ALT_BG : '#f9f9f9', borderColor: darkMode ? 'rgba(212, 175, 55, 0.2)' : 'rgba(212, 175, 55, 0.1)' }]}
                     activeOpacity={0.85}
                     onPress={() => setShowEndTimePicker(true)}
                   >
                     <MaterialCommunityIcons name="clock-time-four-outline" size={18} color={GOLD} />
-                    <Text style={endTime ? styles.pickerText : styles.pickerPlaceholder}>
+                    <Text style={[endTime ? styles.pickerText : styles.pickerPlaceholder, { color: endTime ? textColor : secondaryTextColor }]}>
                       {endTime || 'Select end'}
                     </Text>
                   </TouchableOpacity>
@@ -588,43 +590,43 @@ export default function ScheduleManager() {
                 </>
               ) : (
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, { color: textColor, backgroundColor: darkMode ? CARD_ALT_BG : '#f9f9f9', borderColor: darkMode ? 'rgba(212, 175, 55, 0.2)' : 'rgba(212, 175, 55, 0.1)' }]}
                   value={endTime}
                   onChangeText={setEndTime}
                   placeholder="12:00 PM"
-                  placeholderTextColor={SLATE_300}
+                  placeholderTextColor={secondaryTextColor}
                 />
               )}
             </View>
           </View>
 
-          <Text style={styles.label}>Location</Text>
+          <Text style={[styles.label, { color: secondaryTextColor }]}>Location</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { color: textColor, backgroundColor: darkMode ? CARD_ALT_BG : '#f9f9f9', borderColor: darkMode ? 'rgba(212, 175, 55, 0.2)' : 'rgba(212, 175, 55, 0.1)' }]}
             value={location}
             onChangeText={setLocation}
             placeholder="City Convention Center"
-            placeholderTextColor={SLATE_300}
+            placeholderTextColor={secondaryTextColor}
           />
 
-          <Text style={styles.label}>Slot Limit</Text>
+          <Text style={[styles.label, { color: secondaryTextColor }]}>Slot Limit</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { color: textColor, backgroundColor: darkMode ? CARD_ALT_BG : '#f9f9f9', borderColor: darkMode ? 'rgba(212, 175, 55, 0.2)' : 'rgba(212, 175, 55, 0.1)' }]}
             value={slotLimit}
             onChangeText={setSlotLimit}
             keyboardType="numeric"
             placeholder="100"
-            placeholderTextColor={SLATE_300}
+            placeholderTextColor={secondaryTextColor}
           />
 
-          <Text style={styles.label}>Notes (Optional)</Text>
+          <Text style={[styles.label, { color: secondaryTextColor }]}>Notes (Optional)</Text>
           <TextInput
-            style={[styles.input, styles.notesInput]}
+            style={[styles.input, styles.notesInput, { color: textColor, backgroundColor: darkMode ? CARD_ALT_BG : '#f9f9f9', borderColor: darkMode ? 'rgba(212, 175, 55, 0.2)' : 'rgba(212, 175, 55, 0.1)' }]}
             value={notes}
             onChangeText={setNotes}
             multiline
             placeholder="Requirements passing schedule details"
-            placeholderTextColor={SLATE_300}
+            placeholderTextColor={secondaryTextColor}
           />
 
               <TouchableOpacity
@@ -652,7 +654,7 @@ export default function ScheduleManager() {
             </View>
 
             <View style={styles.cardSpacing}>
-              <Text style={styles.cardTitle}>Upcoming Schedules</Text>
+              <Text style={[styles.cardTitle, { color: textColor }]}>Upcoming Schedules</Text>
 
               {loading ? (
                 <View style={styles.loaderContainer}>
@@ -676,8 +678,8 @@ export default function ScheduleManager() {
                       <Text style={[styles.scheduleMeta, { color: secondaryTextColor }]}>
                         {item.startTime || '--'} - {item.endTime || '--'}
                       </Text>
-                      <Text style={styles.scheduleMeta}>{item.location || 'No location'}</Text>
-                      <Text style={styles.scheduleMeta}>Slots: {item.bookedCount || 0}/{item.slotLimit || 0}</Text>
+                      <Text style={[styles.scheduleMeta, { color: secondaryTextColor }]}>{item.location || 'No location'}</Text>
+                      <Text style={[styles.scheduleMeta, { color: secondaryTextColor }]}>Slots: {item.bookedCount || 0}/{item.slotLimit || 0}</Text>
                     </View>
 
                     <View style={styles.itemActionsRight}>
@@ -705,19 +707,19 @@ export default function ScheduleManager() {
         )}
 
         {activeTab === 'grant' && (
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>Grant Claiming Scheduler</Text>
+          <View style={[styles.card, { backgroundColor: cardBgColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.18)' : 'rgba(212, 175, 55, 0.08)' }]}>
+            <Text style={[styles.cardTitle, { color: textColor }]}>Grant Claiming Scheduler</Text>
 
-            <Text style={styles.label}>Grant Date</Text>
+            <Text style={[styles.label, { color: secondaryTextColor }]}>Grant Date</Text>
             {NativeDateTimePicker ? (
               <>
                 <TouchableOpacity
-                  style={styles.pickerField}
+                  style={[styles.pickerField, { backgroundColor: darkMode ? CARD_ALT_BG : '#f9f9f9', borderColor: darkMode ? 'rgba(212, 175, 55, 0.2)' : 'rgba(212, 175, 55, 0.1)' }]}
                   activeOpacity={0.85}
                   onPress={() => setShowGrantDatePicker(true)}
                 >
                   <MaterialCommunityIcons name="calendar-month-outline" size={18} color={GOLD} />
-                  <Text style={grantDate ? styles.pickerText : styles.pickerPlaceholder}>
+                  <Text style={[grantDate ? styles.pickerText : styles.pickerPlaceholder, { color: grantDate ? textColor : secondaryTextColor }]}>
                     {grantDate || 'Select grant date'}
                   </Text>
                 </TouchableOpacity>
@@ -733,24 +735,24 @@ export default function ScheduleManager() {
               </>
             ) : (
               <TextInput
-                style={styles.input}
+                style={[styles.input, { color: textColor, backgroundColor: darkMode ? CARD_ALT_BG : '#f9f9f9', borderColor: darkMode ? 'rgba(212, 175, 55, 0.2)' : 'rgba(212, 175, 55, 0.1)' }]}
                 value={grantDate}
                 onChangeText={setGrantDate}
                 placeholder="2026-03-24"
-                placeholderTextColor={SLATE_300}
+                placeholderTextColor={secondaryTextColor}
               />
             )}
 
-            <Text style={styles.label}>Grant Time</Text>
+            <Text style={[styles.label, { color: secondaryTextColor }]}>Grant Time</Text>
             {NativeDateTimePicker ? (
               <>
                 <TouchableOpacity
-                  style={styles.pickerField}
+                  style={[styles.pickerField, { backgroundColor: darkMode ? CARD_ALT_BG : '#f9f9f9', borderColor: darkMode ? 'rgba(212, 175, 55, 0.2)' : 'rgba(212, 175, 55, 0.1)' }]}
                   activeOpacity={0.85}
                   onPress={() => setShowGrantTimePicker(true)}
                 >
                   <MaterialCommunityIcons name="clock-time-four-outline" size={18} color={GOLD} />
-                  <Text style={grantTime ? styles.pickerText : styles.pickerPlaceholder}>
+                  <Text style={[grantTime ? styles.pickerText : styles.pickerPlaceholder, { color: grantTime ? textColor : secondaryTextColor }]}>
                     {grantTime || 'Select grant time'}
                   </Text>
                 </TouchableOpacity>
@@ -767,21 +769,21 @@ export default function ScheduleManager() {
               </>
             ) : (
               <TextInput
-                style={styles.input}
+                style={[styles.input, { color: textColor, backgroundColor: darkMode ? CARD_ALT_BG : '#f9f9f9', borderColor: darkMode ? 'rgba(212, 175, 55, 0.2)' : 'rgba(212, 175, 55, 0.1)' }]}
                 value={grantTime}
                 onChangeText={setGrantTime}
                 placeholder="08:00 AM"
-                placeholderTextColor={SLATE_300}
+                placeholderTextColor={secondaryTextColor}
               />
             )}
 
-            <Text style={styles.label}>Grant Location</Text>
+            <Text style={[styles.label, { color: secondaryTextColor }]}>Grant Location</Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { color: textColor, backgroundColor: darkMode ? CARD_ALT_BG : '#f9f9f9', borderColor: darkMode ? 'rgba(212, 175, 55, 0.2)' : 'rgba(212, 175, 55, 0.1)' }]}
               value={grantLocation}
               onChangeText={setGrantLocation}
               placeholder="City Convention Center"
-              placeholderTextColor={SLATE_300}
+              placeholderTextColor={secondaryTextColor}
             />
 
             <TouchableOpacity
@@ -867,6 +869,10 @@ const styles = {
     paddingVertical: 12,
   },
   headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  headerActions: {
     flexDirection: 'row',
     alignItems: 'center',
   },
@@ -1166,9 +1172,14 @@ const styles = {
     color: GOLD,
   },
   darkModeToggle: {
-    borderRadius: 8,
-    padding: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
+    width: 38,
+		height: 38,
+		borderRadius: 19,
+		backgroundColor: CARD_BG,
+		borderWidth: 1,
+		borderColor: 'rgba(212, 175, 55, 0.24)',
+		justifyContent: 'center',
+		alignItems: 'center',
+		marginRight: 3,
   },
 };

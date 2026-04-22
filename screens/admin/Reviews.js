@@ -15,6 +15,7 @@ import { database } from '../../lib/firebase';
 import { ref, get, update, push, serverTimestamp } from 'firebase/database';
 import { auth } from '../../lib/firebase';
 import { signOut } from 'firebase/auth';
+import { useTheme } from '../../lib/ThemeContext';
 
 const OCEAN_DEEP = '#001B2E';
 const CARD_BG = '#0B2740';
@@ -62,8 +63,8 @@ const normalizeRequirement = (item, index) => ({
 
 export default function Reviews() {
 	const navigation = useNavigation();
+	const { darkMode, toggleDarkMode } = useTheme();
 	const [headerFullName, setHeaderFullName] = React.useState('');
-	const [darkMode, setDarkMode] = React.useState(false);
 	const [schools, setSchools] = React.useState([]);
 	const [requirementsChecklist, setRequirementsChecklist] = React.useState(
 		DEFAULT_REQUIREMENTS_CHECKLIST.map((item, index) => normalizeRequirement(item, index))
@@ -318,9 +319,11 @@ export default function Reviews() {
 						<Text style={[styles.brand, { color: textColor }]}>Hi, {headerFullName || 'Admin'}</Text>
 					</View>
 
-					<TouchableOpacity style={[styles.notifButton, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleLogout}>
-						<MaterialCommunityIcons name="logout" size={22} color={GOLD} />
-					</TouchableOpacity>
+					<View style={styles.headerActions}>
+						<TouchableOpacity style={[styles.notifButton, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleLogout}>
+							<MaterialCommunityIcons name="logout" size={22} color={GOLD} />
+						</TouchableOpacity>
+					</View>
 				</View>
 				<View style={styles.loaderContainer}>
 					<ActivityIndicator size="large" color={GOLD} />
@@ -336,12 +339,14 @@ export default function Reviews() {
 				<View style={styles.headerLeft}>
 					<Text style={[styles.brand, { color: textColor }]}>Hi, {headerFullName || 'Admin'}</Text>
 				</View>
-			<TouchableOpacity style={[styles.darkModeToggle, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleDarkModeToggle}>
-				<MaterialCommunityIcons name={darkMode ? 'white-balance-sunny' : 'moon-waning-crescent'} size={18} color={GOLD} />
-			</TouchableOpacity>
-				<TouchableOpacity style={[styles.notifButton, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleLogout}>
-					<MaterialCommunityIcons name="logout" size={22} color={GOLD} />
-				</TouchableOpacity>
+				<View style={styles.headerActions}>
+					<TouchableOpacity style={[styles.darkModeToggle, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleDarkModeToggle}>
+						<MaterialCommunityIcons name={darkMode ? 'white-balance-sunny' : 'moon-waning-crescent'} size={18} color={GOLD} />
+					</TouchableOpacity>
+					<TouchableOpacity style={[styles.notifButton, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleLogout}>
+						<MaterialCommunityIcons name="logout" size={22} color={GOLD} />
+					</TouchableOpacity>
+				</View>
 			</View>
 
 			<ScrollView
@@ -364,7 +369,7 @@ export default function Reviews() {
 										size={24}
 										color={GOLD}
 									/>
-									<View style={styles.schoolInfo}>
+								<View style={styles.schoolInfo}>
 										<Text style={[styles.schoolName, { color: textColor }]}>{school.name}</Text>
 										<Text style={[styles.scholarCount, { color: secondaryTextColor }]}>
 											{school.count} {school.count === 1 ? 'scholar' : 'scholars'}
@@ -403,13 +408,37 @@ export default function Reviews() {
 														<MaterialCommunityIcons name="account" size={16} color={GOLD} />
 													</View>
 													<View style={styles.scholarDetails}>
-														<Text style={styles.scholarName}>{scholar.fullName || 'Unknown Scholar'}</Text>
-														<Text style={styles.scholarEmail}>{scholar.email}</Text>
-														{scholar.yearLevel && <Text style={styles.scholarYearLevel}>{scholar.yearLevel}</Text>}
+														<Text style={[styles.scholarName, { color: textColor }]}>{scholar.fullName || 'Unknown Scholar'}</Text>
+														<Text style={[styles.scholarEmail, { color: secondaryTextColor }]}>{scholar.email}</Text>
+														{scholar.yearLevel && <Text style={[styles.scholarYearLevel, { color: darkMode ? GOLD : LIGHT_TEXT_SECONDARY }]}>{scholar.yearLevel}</Text>}
 													</View>
 													<View style={styles.scholarRightCol}>
-														<View style={[styles.statusBadge, isModified && styles.statusBadgeModified]}>
-															<Text style={styles.statusText}>
+														<View
+															style={[
+																styles.statusBadge,
+																{
+																	backgroundColor: darkMode
+																		? CARD_BG
+																		: 'rgba(74, 222, 128, 0.18)',
+																	borderColor: darkMode
+																		? 'transparent'
+																		: 'rgba(74, 222, 128, 0.4)',
+																},
+																isModified && styles.statusBadgeModified,
+															]}
+														>
+															<Text
+																style={[
+																	styles.statusText,
+																	{
+																		color: isModified
+																			? GOLD
+																			: darkMode
+																			? GOLD
+																			: '#166534',
+																	},
+																]}
+															>
 																{isModified ? 'Modified' : (isComplete ? 'Complete' : 'Incomplete')}
 															</Text>
 														</View>
@@ -423,10 +452,10 @@ export default function Reviews() {
 												</TouchableOpacity>
 
 												{isExpanded && (
-													<View style={styles.requirementsWrap}>
-														<Text style={styles.requirementsTitle}>Requirements Checklist</Text>
+													<View style={[styles.requirementsWrap, { backgroundColor: darkMode ? 'rgba(0, 27, 46, 0.2)' : '#fafafa' }]}>
+														<Text style={[styles.requirementsTitle, { color: textColor }]}>Requirements Checklist</Text>
 															{requirementsChecklist.length === 0 ? (
-																<Text style={styles.noRequirementsText}>No required items configured.</Text>
+																<Text style={[styles.noRequirementsText, { color: secondaryTextColor }]}>No required items configured.</Text>
 															) : null}
 															{requirementsChecklist.map((item) => {
 															const checked = !!scholar?.requirements?.[item.id];
@@ -443,12 +472,12 @@ export default function Reviews() {
 																	<MaterialCommunityIcons
 																		name={checked ? 'checkbox-marked' : 'checkbox-blank-outline'}
 																		size={20}
-																		color={checked ? GOLD : SLATE_300}
+																		color={checked ? GOLD : secondaryTextColor}
 																		style={styles.checkIcon}
 																	/>
 																	<View style={styles.requirementTextWrap}>
-																		<Text style={styles.requirementLabel}>{item.label}</Text>
-																		<Text style={styles.requirementDetail}>{item.detail}</Text>
+																		<Text style={[styles.requirementLabel, { color: textColor }]}>{item.label}</Text>
+																		<Text style={[styles.requirementDetail, { color: secondaryTextColor }]}>{item.detail}</Text>
 																	</View>
 																	{isSaving && <ActivityIndicator size="small" color={GOLD} />}
 																</TouchableOpacity>
@@ -527,6 +556,10 @@ const styles = {
 		paddingVertical: 12,
 	},
 	headerLeft: {
+		flexDirection: 'row',
+		alignItems: 'center',
+	},
+	headerActions: {
 		flexDirection: 'row',
 		alignItems: 'center',
 	},
@@ -775,9 +808,14 @@ const styles = {
 		color: GOLD,
 	},
 	darkModeToggle: {
-		borderRadius: 8,
-		padding: 8,
+		width: 38,
+		height: 38,
+		borderRadius: 19,
+		backgroundColor: CARD_BG,
+		borderWidth: 1,
+		borderColor: 'rgba(212, 175, 55, 0.24)',
 		justifyContent: 'center',
 		alignItems: 'center',
+		marginRight: 3,
 	},
 };

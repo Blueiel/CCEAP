@@ -9,18 +9,19 @@ import {
 	ScrollView,
 	Alert,
 } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import {
 	EmailAuthProvider,
 	reauthenticateWithCredential,
 	signOut,
-	updateEmail,
 	updatePassword,
 	updateProfile,
 } from 'firebase/auth';
 import { get, ref, serverTimestamp, update } from 'firebase/database';
 import { auth, database } from '../../lib/firebase';
+import { useTheme } from '../../lib/ThemeContext';
 
 const GOLD = '#D4AF37';
 const OCEAN_DEEP = '#001B2E';
@@ -34,6 +35,7 @@ const LIGHT_BG = '#f5f5f5';
 const LIGHT_CARD = '#ffffff';
 const LIGHT_TEXT = '#1a1a1a';
 const LIGHT_TEXT_SECONDARY = '#666666';
+const YEAR_LEVEL_OPTIONS = ['1st Year', '2nd Year', '3rd Year', '4th Year'];
 
 const splitFullName = (fullName = '') => {
 	const parts = fullName.trim().split(/\s+/).filter(Boolean);
@@ -58,8 +60,8 @@ const splitFullName = (fullName = '') => {
 };
 
 export default function Settings({ navigation }) {
+	const { darkMode, toggleDarkMode } = useTheme();
 	const [headerFirstName, setHeaderFirstName] = React.useState('Scholar');
-	const [darkMode, setDarkMode] = React.useState(false);
 	const [isLoading, setIsLoading] = React.useState(true);
 	const [isSavingProfile, setIsSavingProfile] = React.useState(false);
 	const [isSavingAccount, setIsSavingAccount] = React.useState(false);
@@ -71,7 +73,6 @@ export default function Settings({ navigation }) {
 	const [school, setSchool] = React.useState('');
 
 	const [email, setEmail] = React.useState('');
-	const [newEmail, setNewEmail] = React.useState('');
 	const [currentPassword, setCurrentPassword] = React.useState('');
 	const [newPassword, setNewPassword] = React.useState('');
 	const [confirmPassword, setConfirmPassword] = React.useState('');
@@ -110,7 +111,6 @@ export default function Settings({ navigation }) {
 
 			const accountEmail = user.email || profile?.email || '';
 			setEmail(accountEmail);
-			setNewEmail(accountEmail);
 		} catch {
 			setHeaderFirstName('Scholar');
 			Alert.alert('Error', 'Unable to load profile settings right now.');
@@ -158,8 +158,8 @@ export default function Settings({ navigation }) {
 		const normalizedYearLevel = yearLevel.trim();
 		const normalizedSchool = school.trim();
 
-		if (!normalizedFirstName || !normalizedLastName || !normalizedYearLevel || !normalizedSchool) {
-			Alert.alert('Missing fields', 'First name, last name, year level, and school are required.');
+		if (!normalizedFirstName || !normalizedLastName || !normalizedYearLevel) {
+			Alert.alert('Missing fields', 'First name, last name, and year level are required.');
 			return;
 		}
 
@@ -199,12 +199,10 @@ export default function Settings({ navigation }) {
 			return;
 		}
 
-		const normalizedNewEmail = newEmail.trim().toLowerCase();
-		const shouldUpdateEmail = normalizedNewEmail && normalizedNewEmail !== user.email;
 		const shouldUpdatePassword = Boolean(newPassword);
 
-		if (!shouldUpdateEmail && !shouldUpdatePassword) {
-			Alert.alert('No changes', 'Update the email or enter a new password first.');
+		if (!shouldUpdatePassword) {
+			Alert.alert('No changes', 'Enter a new password first.');
 			return;
 		}
 
@@ -231,18 +229,7 @@ export default function Settings({ navigation }) {
 			const credential = EmailAuthProvider.credential(user.email, currentPassword);
 			await reauthenticateWithCredential(user, credential);
 
-			if (shouldUpdateEmail) {
-				await updateEmail(user, normalizedNewEmail);
-				await update(ref(database, `users/${user.uid}`), {
-					email: normalizedNewEmail,
-					updatedAt: serverTimestamp(),
-				});
-				setEmail(normalizedNewEmail);
-			}
-
-			if (shouldUpdatePassword) {
-				await updatePassword(user, newPassword);
-			}
+			await updatePassword(user, newPassword);
 
 			setCurrentPassword('');
 			setNewPassword('');
@@ -268,14 +255,16 @@ export default function Settings({ navigation }) {
 				</View>
 			</View>
 
-			<TouchableOpacity style={[styles.darkModeToggle, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleDarkModeToggle}>
-				<MaterialCommunityIcons name={darkMode ? 'white-balance-sunny' : 'moon-waning-crescent'} size={18} color={GOLD} />
-			</TouchableOpacity>
+			<View style={styles.headerActions}>
+				<TouchableOpacity style={[styles.darkModeToggle, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleDarkModeToggle}>
+					<MaterialCommunityIcons name={darkMode ? 'white-balance-sunny' : 'moon-waning-crescent'} size={18} color={GOLD} />
+				</TouchableOpacity>
 
-				<TouchableOpacity style={styles.notifButton} activeOpacity={0.85} onPress={handleLogout}>
+				<TouchableOpacity style={[styles.notifButton, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleLogout}>
 					<MaterialCommunityIcons name="logout" size={22} color={GOLD} />
 				</TouchableOpacity>
 			</View>
+		</View>
 
 		<ScrollView contentContainerStyle={[styles.scroll, { backgroundColor }]} showsVerticalScrollIndicator={false}>
 			<View style={[styles.card, { backgroundColor: cardBgColor }]}>
@@ -283,7 +272,7 @@ export default function Settings({ navigation }) {
 
 				<Text style={[styles.label, { color: textColor }]}>First Name</Text>
 					<TextInput
-						style={[styles.input, { color: textColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.24)' : 'rgba(212, 175, 55, 0.15)' }]}
+						style={[styles.input, { backgroundColor: darkMode ? CARD_ALT_BG : '#f9f9f9', color: textColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.24)' : 'rgba(212, 175, 55, 0.15)' }]}
 						value={firstName}
 						onChangeText={setFirstName}
 						placeholder="First name"
@@ -292,7 +281,7 @@ export default function Settings({ navigation }) {
 
 				<Text style={[styles.label, { color: textColor }]}>Middle Name</Text>
 				<TextInput
-					style={[styles.input, { color: textColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.24)' : 'rgba(212, 175, 55, 0.15)' }]}
+					style={[styles.input, { backgroundColor: darkMode ? CARD_ALT_BG : '#f9f9f9', color: textColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.24)' : 'rgba(212, 175, 55, 0.15)' }]}
 					value={middleName}
 					onChangeText={setMiddleName}
 					placeholder="Middle name"
@@ -301,7 +290,7 @@ export default function Settings({ navigation }) {
 
 				<Text style={[styles.label, { color: textColor }]}>Last Name</Text>
 				<TextInput
-					style={[styles.input, { color: textColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.24)' : 'rgba(212, 175, 55, 0.15)' }]}
+					style={[styles.input, { backgroundColor: darkMode ? CARD_ALT_BG : '#f9f9f9', color: textColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.24)' : 'rgba(212, 175, 55, 0.15)' }]}
 					value={lastName}
 					onChangeText={setLastName}
 					placeholder="Last name"
@@ -309,23 +298,42 @@ export default function Settings({ navigation }) {
 					/>
 
 				<Text style={[styles.label, { color: textColor }]}>Year Level</Text>
-				<TextInput
-					style={[styles.input, { color: textColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.24)' : 'rgba(212, 175, 55, 0.15)' }]}
-					value={yearLevel}
-					onChangeText={setYearLevel}
-					placeholder="e.g., 3rd Year"
-					placeholderTextColor={darkMode ? 'rgba(203, 213, 225, 0.45)' : 'rgba(26, 26, 26, 0.4)'}
-					/>
+				<View
+					style={[
+						styles.pickerWrapper,
+						{
+							backgroundColor: darkMode ? CARD_ALT_BG : '#f9f9f9',
+							borderColor: darkMode ? 'rgba(212, 175, 55, 0.24)' : 'rgba(212, 175, 55, 0.15)',
+						},
+					]}
+				>
+					<Picker
+						selectedValue={yearLevel}
+						onValueChange={setYearLevel}
+					style={[styles.picker, { color: textColor, backgroundColor: darkMode ? CARD_ALT_BG : '#f9f9f9' }]}
+					dropdownIconColor={GOLD}
+					mode="dropdown"
+					itemStyle={[styles.pickerItem, { color: textColor, backgroundColor: darkMode ? CARD_ALT_BG : '#f9f9f9' }]}
+					>
+						<Picker.Item
+							label="Select year level"
+							value=""
+							color={darkMode ? 'rgba(203, 213, 225, 0.65)' : '#000000'}
+						/>
+						{YEAR_LEVEL_OPTIONS.map((option) => (
+							<Picker.Item key={option} label={option} value={option} color={darkMode ? textColor : '#000000'} />
+						))}
+					</Picker>
+				</View>
 
 				<Text style={[styles.label, { color: textColor }]}>School</Text>
 				<TextInput
-					style={[styles.input, { color: textColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.24)' : 'rgba(212, 175, 55, 0.15)' }]}
+					style={[styles.input, styles.readOnlyInput, { backgroundColor: darkMode ? 'rgba(212, 175, 55, 0.08)' : '#f9f9f9', color: textColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.24)' : 'rgba(212, 175, 55, 0.15)' }]}
 					value={school}
-					onChangeText={setSchool}
-					placeholder="School name"
+					editable={false}
+					placeholder="School"
 					placeholderTextColor={darkMode ? 'rgba(203, 213, 225, 0.45)' : 'rgba(26, 26, 26, 0.4)'}
 					/>
-
 					<TouchableOpacity
 						style={[styles.primaryButton, (isSavingProfile || isLoading) && styles.disabledButton]}
 						disabled={isSavingProfile || isLoading}
@@ -343,28 +351,16 @@ export default function Settings({ navigation }) {
 
 				<Text style={[styles.label, { color: textColor }]}>Current Email</Text>
 				<TextInput
-					style={[styles.input, styles.readOnlyInput, { color: textColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.24)' : 'rgba(212, 175, 55, 0.15)', backgroundColor: darkMode ? 'rgba(212, 175, 55, 0.08)' : 'rgba(0, 0, 0, 0.02)' }]}
+					style={[styles.input, styles.readOnlyInput, { color: textColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.24)' : 'rgba(212, 175, 55, 0.15)', backgroundColor: darkMode ? 'rgba(212, 175, 55, 0.08)' : '#f9f9f9' }]}
 					value={email}
 					editable={false}
 					placeholder="Email"
 					placeholderTextColor={darkMode ? 'rgba(203, 213, 225, 0.45)' : 'rgba(26, 26, 26, 0.4)'}
 					/>
 
-				<Text style={[styles.label, { color: textColor }]}>New Email</Text>
-				<TextInput
-					style={[styles.input, { color: textColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.24)' : 'rgba(212, 175, 55, 0.15)' }]}
-					value={newEmail}
-					onChangeText={setNewEmail}
-					keyboardType="email-address"
-					autoCapitalize="none"
-					autoCorrect={false}
-					placeholder="new@email.com"
-					placeholderTextColor={darkMode ? 'rgba(203, 213, 225, 0.45)' : 'rgba(26, 26, 26, 0.4)'}
-					/>
-
 				<Text style={[styles.label, { color: textColor }]}>Current Password (required)</Text>
 				<TextInput
-					style={[styles.input, { color: textColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.24)' : 'rgba(212, 175, 55, 0.15)' }]}
+					style={[styles.input, { backgroundColor: darkMode ? CARD_ALT_BG : '#f9f9f9', color: textColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.24)' : 'rgba(212, 175, 55, 0.15)' }]}
 					value={currentPassword}
 					onChangeText={setCurrentPassword}
 					secureTextEntry
@@ -376,7 +372,7 @@ export default function Settings({ navigation }) {
 
 				<Text style={[styles.label, { color: textColor }]}>New Password</Text>
 				<TextInput
-					style={[styles.input, { color: textColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.24)' : 'rgba(212, 175, 55, 0.15)' }]}
+					style={[styles.input, { backgroundColor: darkMode ? CARD_ALT_BG : '#f9f9f9', color: textColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.24)' : 'rgba(212, 175, 55, 0.15)' }]}
 					value={newPassword}
 					onChangeText={setNewPassword}
 					secureTextEntry
@@ -388,7 +384,7 @@ export default function Settings({ navigation }) {
 
 				<Text style={[styles.label, { color: textColor }]}>Confirm New Password</Text>
 				<TextInput
-					style={[styles.input, { color: textColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.24)' : 'rgba(212, 175, 55, 0.15)' }]}
+					style={[styles.input, { backgroundColor: darkMode ? CARD_ALT_BG : '#f9f9f9', color: textColor, borderColor: darkMode ? 'rgba(212, 175, 55, 0.24)' : 'rgba(212, 175, 55, 0.15)' }]}
 					value={confirmPassword}
 					onChangeText={setConfirmPassword}
 					secureTextEntry
@@ -405,7 +401,7 @@ export default function Settings({ navigation }) {
 						activeOpacity={0.85}
 					>
 						<Text style={styles.primaryButtonText}>
-							{isSavingAccount ? 'UPDATING ACCOUNT...' : 'UPDATE EMAIL / PASSWORD'}
+							{isSavingAccount ? 'UPDATING ACCOUNT...' : 'UPDATE PASSWORD'}
 						</Text>
 					</TouchableOpacity>
 				</View>
@@ -452,6 +448,10 @@ const styles = StyleSheet.create({
 		flexDirection: 'row',
 		alignItems: 'center',
 	},
+	headerActions: {
+		flexDirection: 'row',
+		alignItems: 'center',
+	},
 	brand: {
 		color: SLATE_100,
 		fontSize: 19,
@@ -493,7 +493,7 @@ const styles = StyleSheet.create({
 		borderColor: 'rgba(212, 175, 55, 0.24)',
 		justifyContent: 'center',
 		alignItems: 'center',
-		marginRight: 10,
+		marginRight: 3,
 	},
 	scroll: {
 		paddingHorizontal: 20,
@@ -536,8 +536,26 @@ const styles = StyleSheet.create({
 		marginBottom: 12,
 		fontSize: 14,
 	},
+	pickerWrapper: {
+		borderWidth: 1,
+		borderRadius: 10,
+		marginBottom: 12,
+		overflow: 'hidden',
+	},
+	picker: {
+		height: 50,
+		color: SLATE_100,
+	},
+	pickerItem: {
+		fontSize: 14,
+	},
 	readOnlyInput: {
 		opacity: 0.75,
+	},
+	helperText: {
+		fontSize: 12,
+		marginTop: -4,
+		marginBottom: 12,
 	},
 	primaryButton: {
 		marginTop: 4,

@@ -15,6 +15,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { get, ref } from 'firebase/database';
 import { auth, database } from '../../lib/firebase';
+import { useTheme } from '../../lib/ThemeContext';
 
 const GOLD = '#D4AF37';
 const OCEAN_DEEP = '#001B2E';
@@ -31,7 +32,7 @@ const LIGHT_TEXT_SECONDARY = '#666666';
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
-  const [darkMode, setDarkMode] = React.useState(false);
+  const { darkMode, setDarkMode } = useTheme();
   const [showPassword, setShowPassword] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [successState, setSuccessState] = React.useState({
@@ -40,8 +41,13 @@ export default function LoginScreen({ navigation }) {
     targetScreen: 'ScholarDashboard',
   });
 
+  React.useEffect(() => {
+    // Force light mode for auth screens
+    setDarkMode(false);
+  }, [setDarkMode]);
+
   const handleDarkModeToggle = () => {
-    toggleDarkMode();
+    setDarkMode(false);
   };
 
   const backgroundColor = darkMode ? OCEAN_DEEP : LIGHT_BG;

@@ -14,6 +14,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { auth, database } from '../../lib/firebase';
 import { get, ref } from 'firebase/database';
 import { signOut } from 'firebase/auth';
+import { useTheme } from '../../lib/ThemeContext';
 
 const GOLD = '#D4AF37';
 const OCEAN_DEEP = '#001B2E';
@@ -45,8 +46,8 @@ const formatTimeAgo = (timestamp) => {
 };
 
 export default function ScholarAnnouncement({ navigation }) {
+  const { darkMode, toggleDarkMode } = useTheme();
   const [headerFirstName, setHeaderFirstName] = React.useState('Scholar');
-  const [darkMode, setDarkMode] = React.useState(false);
   const [loading, setLoading] = React.useState(true);
   const [announcements, setAnnouncements] = React.useState([]);
 
@@ -134,13 +135,15 @@ export default function ScholarAnnouncement({ navigation }) {
           </View>
         </View>
 
-        <TouchableOpacity style={[styles.darkModeToggle, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleDarkModeToggle}>
-          <MaterialCommunityIcons name={darkMode ? 'white-balance-sunny' : 'moon-waning-crescent'} size={18} color={GOLD} />
-        </TouchableOpacity>
+        <View style={styles.headerActions}>
+          <TouchableOpacity style={[styles.darkModeToggle, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleDarkModeToggle}>
+            <MaterialCommunityIcons name={darkMode ? 'white-balance-sunny' : 'moon-waning-crescent'} size={18} color={GOLD} />
+          </TouchableOpacity>
 
-        <TouchableOpacity style={styles.notifButton} activeOpacity={0.85} onPress={handleLogout}>
-          <MaterialCommunityIcons name="logout" size={22} color={GOLD} />
-        </TouchableOpacity>
+          <TouchableOpacity style={[styles.notifButton, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleLogout}>
+            <MaterialCommunityIcons name="logout" size={22} color={GOLD} />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <ScrollView contentContainerStyle={[styles.scroll, { backgroundColor }]} showsVerticalScrollIndicator={false}>
@@ -216,6 +219,10 @@ const styles = {
     flexDirection: 'row',
     alignItems: 'center',
   },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   brand: {
     color: SLATE_100,
     fontSize: 19,
@@ -250,14 +257,14 @@ const styles = {
   },
   darkModeToggle: {
     width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: CARD_BG,
-    borderWidth: 1,
-    borderColor: 'rgba(212, 175, 55, 0.24)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 10,
+		height: 38,
+		borderRadius: 19,
+		backgroundColor: CARD_BG,
+		borderWidth: 1,
+		borderColor: 'rgba(212, 175, 55, 0.24)',
+		justifyContent: 'center',
+		alignItems: 'center',
+		marginRight: 3,
   },
   scroll: {
     paddingHorizontal: 20,

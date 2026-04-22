@@ -16,6 +16,7 @@ import { database } from '../../lib/firebase';
 import { ref, get } from 'firebase/database';
 import { auth } from '../../lib/firebase';
 import { signOut } from 'firebase/auth';
+import { useTheme } from '../../lib/ThemeContext';
 
 const OCEAN_DEEP = '#001B2E';
 const CARD_BG = '#0B2740';
@@ -63,8 +64,8 @@ const formatScholarName = (scholar = {}) => {
 export default function ScholarRegistry() {
   const navigation = useNavigation();
   const route = useRoute();
+  const { darkMode, toggleDarkMode } = useTheme();
   const [headerFullName, setHeaderFullName] = React.useState('');
-  const [darkMode, setDarkMode] = React.useState(false);
   const [schools, setSchools] = React.useState([]);
   const [activeRequirementIds, setActiveRequirementIds] = React.useState(REQUIREMENT_IDS);
   const [searchQuery, setSearchQuery] = React.useState('');
@@ -363,9 +364,11 @@ export default function ScholarRegistry() {
             <Text style={[styles.brand, { color: textColor }]}>Hi, {headerFullName || 'Admin'}</Text>
           </View>
 
-          <TouchableOpacity style={[styles.notifButton, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleLogout}>
-            <MaterialCommunityIcons name="logout" size={22} color={GOLD} />
-          </TouchableOpacity>
+          <View style={styles.headerActions}>
+            <TouchableOpacity style={[styles.notifButton, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleLogout}>
+              <MaterialCommunityIcons name="logout" size={22} color={GOLD} />
+            </TouchableOpacity>
+          </View>
         </View>
 
         <View style={styles.loaderContainer}>
@@ -383,13 +386,15 @@ export default function ScholarRegistry() {
           <Text style={[styles.brand, { color: textColor }]}>Hi, {headerFullName || 'Admin'}</Text>
         </View>
 
-        <TouchableOpacity style={[styles.darkModeToggle, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleDarkModeToggle}>
-          <MaterialCommunityIcons name={darkMode ? 'white-balance-sunny' : 'moon-waning-crescent'} size={18} color={GOLD} />
-        </TouchableOpacity>
+        <View style={styles.headerActions}>
+          <TouchableOpacity style={[styles.darkModeToggle, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleDarkModeToggle}>
+            <MaterialCommunityIcons name={darkMode ? 'white-balance-sunny' : 'moon-waning-crescent'} size={18} color={GOLD} />
+          </TouchableOpacity>
 
-        <TouchableOpacity style={[styles.notifButton, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleLogout}>
-          <MaterialCommunityIcons name="logout" size={22} color={GOLD} />
-        </TouchableOpacity>
+          <TouchableOpacity style={[styles.notifButton, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleLogout}>
+            <MaterialCommunityIcons name="logout" size={22} color={GOLD} />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <View style={[styles.content, { backgroundColor }]}>
@@ -460,8 +465,31 @@ export default function ScholarRegistry() {
                     </View>
 
                     <View style={styles.scholarRightCol}>
-                      <View style={[styles.statusBadge, !isComplete && styles.statusBadgeIncomplete, { backgroundColor: isComplete ? (darkMode ? 'rgba(212, 175, 55, 0.16)' : 'rgba(212, 175, 55, 0.1)') : (darkMode ? 'rgba(203, 213, 225, 0.12)' : 'rgba(203, 213, 225, 0.08)'), borderColor: isComplete ? 'rgba(212, 175, 55, 0.3)' : (darkMode ? 'rgba(203, 213, 225, 0.24)' : 'rgba(203, 213, 225, 0.16)') }]}>
-                        <Text style={[styles.statusText, !isComplete && styles.statusTextIncomplete, { color: isComplete ? GOLD : secondaryTextColor }]}>
+                      <View
+                        style={[
+                          styles.statusBadge,
+                          !isComplete && styles.statusBadgeIncomplete,
+                          {
+                            backgroundColor: darkMode
+                              ? isComplete
+                                ? 'rgba(212, 175, 55, 0.16)'
+                                : 'rgba(203, 213, 225, 0.12)'
+                              : 'rgba(74, 222, 128, 0.18)',
+                            borderColor: darkMode
+                              ? isComplete
+                                ? 'rgba(212, 175, 55, 0.3)'
+                                : 'rgba(203, 213, 225, 0.24)'
+                              : 'rgba(74, 222, 128, 0.4)',
+                          },
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.statusText,
+                            !isComplete && styles.statusTextIncomplete,
+                            { color: darkMode ? (isComplete ? GOLD : secondaryTextColor) : '#166534' },
+                          ]}
+                        >
                           {isComplete ? 'Complete' : 'Incomplete'}
                         </Text>
                       </View>
@@ -517,6 +545,10 @@ const styles = {
     paddingVertical: 12,
   },
   headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  headerActions: {
     flexDirection: 'row',
     alignItems: 'center',
   },
@@ -793,9 +825,14 @@ const styles = {
     color: GOLD,
   },
   darkModeToggle: {
-    borderRadius: 8,
-    padding: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
+    width: 38,
+		height: 38,
+		borderRadius: 19,
+		backgroundColor: CARD_BG,
+		borderWidth: 1,
+		borderColor: 'rgba(212, 175, 55, 0.24)',
+		justifyContent: 'center',
+		alignItems: 'center',
+		marginRight: 3,
   },
 };

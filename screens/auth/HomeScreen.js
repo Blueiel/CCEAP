@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useTheme } from '../../lib/ThemeContext';
 
 const { width } = Dimensions.get('window');
 
@@ -31,10 +32,15 @@ const HERO_IMAGE_ASPECT_RATIO =
     : 4 / 3;
 
 export default function HomeScreen({ navigation }) {
-  const [darkMode, setDarkMode] = React.useState(false);
+  const { darkMode, setDarkMode } = useTheme();
+
+  React.useEffect(() => {
+    // Force light mode for auth screens
+    setDarkMode(false);
+  }, [setDarkMode]);
 
   const handleDarkModeToggle = () => {
-    toggleDarkMode();
+    setDarkMode(!darkMode);
   };
 
   const backgroundColor = darkMode ? OCEAN_DEEP : LIGHT_BG;

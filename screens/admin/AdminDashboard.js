@@ -247,13 +247,15 @@ export default function AdminDashboard() {
           <Text style={[styles.brand, { color: textColor }]}>Hi, {headerFullName || 'Admin'}</Text>
         </View>
 
-        <TouchableOpacity style={[styles.darkModeToggle, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleDarkModeToggle}>
-          <MaterialCommunityIcons name={darkMode ? 'white-balance-sunny' : 'moon-waning-crescent'} size={18} color={GOLD} />
-        </TouchableOpacity>
+        <View style={styles.headerActions}>
+          <TouchableOpacity style={[styles.darkModeToggle, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleDarkModeToggle}>
+            <MaterialCommunityIcons name={darkMode ? 'white-balance-sunny' : 'moon-waning-crescent'} size={18} color={GOLD} />
+          </TouchableOpacity>
 
-        <TouchableOpacity style={[styles.notifButton, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleLogout}>
-          <MaterialCommunityIcons name="logout" size={22} color={GOLD} />
-        </TouchableOpacity>
+          <TouchableOpacity style={[styles.notifButton, { backgroundColor: cardBgColor }]} activeOpacity={0.85} onPress={handleLogout}>
+            <MaterialCommunityIcons name="logout" size={22} color={GOLD} />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <ScrollView contentContainerStyle={[styles.scroll, { backgroundColor }]} showsVerticalScrollIndicator={false}>
@@ -359,8 +361,10 @@ export default function AdminDashboard() {
                   <View style={styles.schoolIconWrap}>
                     <MaterialCommunityIcons name="school-outline" size={20} color={secondaryTextColor} />
                   </View>
-                  <View>
-                    <Text style={[styles.schoolName, { color: textColor }]}>{school.name}</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.schoolName, { color: textColor }]} numberOfLines={2}>
+                      {school.name}
+                    </Text>
                     <Text style={[styles.schoolCount, { color: secondaryTextColor }]}>{school.count}</Text>
                   </View>
                 </View>
@@ -421,7 +425,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(212, 175, 55, 0.24)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 10,
+    marginRight: 3,
   },
   header: {
     flexDirection: 'row',
@@ -437,22 +441,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   brand: {
     color: SLATE_100,
     fontSize: 19,
     fontWeight: '700',
     letterSpacing: 0.2,
-  },
-  darkModeToggle: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: CARD_BG,
-    borderWidth: 1,
-    borderColor: 'rgba(212, 175, 55, 0.24)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 10,
   },
   notifButton: {
     width: 38,
@@ -579,6 +576,8 @@ const styles = StyleSheet.create({
   schoolLeft: {
     flexDirection: 'row',
     alignItems: 'center',
+    flex: 1,
+    marginRight: 10,
   },
   schoolIconWrap: {
     width: 40,
