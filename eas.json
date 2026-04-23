@@ -12,18 +12,10 @@
       "distribution": "internal"
     },
     "production": {
-      "autoIncrement": true,
-      "android": {
-        "buildType": "aab"
-      }
+      "autoIncrement": true
     }
   },
   "submit": {
-    "production": {
-      "android": {
-        "serviceAccount": "./serviceAccountKey.json",
-        "track": "internal"
-      }
-    }
+    "production": {}
   }
 }
