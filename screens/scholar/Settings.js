@@ -35,6 +35,7 @@ const LIGHT_BG = '#f5f5f5';
 const LIGHT_CARD = '#ffffff';
 const LIGHT_TEXT = '#1a1a1a';
 const LIGHT_TEXT_SECONDARY = '#666666';
+const LIGHT_DROPDOWN_BG = '#f9f9f9';
 const YEAR_LEVEL_OPTIONS = ['1st Year', '2nd Year', '3rd Year', '4th Year'];
 
 const splitFullName = (fullName = '') => {
@@ -302,7 +303,7 @@ export default function Settings({ navigation }) {
 					style={[
 						styles.pickerWrapper,
 						{
-							backgroundColor: darkMode ? CARD_ALT_BG : '#f9f9f9',
+							backgroundColor: darkMode ? CARD_ALT_BG : LIGHT_DROPDOWN_BG,
 							borderColor: darkMode ? 'rgba(212, 175, 55, 0.24)' : 'rgba(212, 175, 55, 0.15)',
 						},
 					]}
@@ -310,10 +311,10 @@ export default function Settings({ navigation }) {
 					<Picker
 						selectedValue={yearLevel}
 						onValueChange={setYearLevel}
-					style={[styles.picker, { color: textColor, backgroundColor: darkMode ? CARD_ALT_BG : '#f9f9f9' }]}
+					style={[styles.picker, { color: textColor, backgroundColor: darkMode ? CARD_ALT_BG : LIGHT_DROPDOWN_BG }]}
 					dropdownIconColor={GOLD}
 					mode="dropdown"
-					itemStyle={[styles.pickerItem, { color: textColor, backgroundColor: darkMode ? CARD_ALT_BG : '#f9f9f9' }]}
+					itemStyle={[styles.pickerItem, { color: textColor, backgroundColor: darkMode ? CARD_ALT_BG : LIGHT_DROPDOWN_BG }]}
 					>
 						<Picker.Item
 							label="Select year level"

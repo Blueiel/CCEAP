@@ -25,7 +25,7 @@ const LIGHT_BG = '#f5f5f5';
 const LIGHT_CARD = '#ffffff';
 const LIGHT_TEXT = '#1a1a1a';
 const LIGHT_TEXT_SECONDARY = '#666666';
-const HERO_IMAGE_ASSET = Image.resolveAssetSource(require('../../assets/cceap.png'));
+const HERO_IMAGE_ASSET = Image.resolveAssetSource(require('../../assets/icon.png'));
 const HERO_IMAGE_ASPECT_RATIO =
   HERO_IMAGE_ASSET?.width && HERO_IMAGE_ASSET?.height
     ? HERO_IMAGE_ASSET.width / HERO_IMAGE_ASSET.height
@@ -61,7 +61,7 @@ export default function HomeScreen({ navigation }) {
           <View style={styles.imageWrapper}>
             <View style={[styles.imageGradientBorder, { borderColor: darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(212, 175, 55, 0.2)' }]}>
               <Image
-                source={require('../../assets/cceap.png')}
+                source={require('../../assets/icon.png')}
                 style={styles.heroImage}
                 resizeMode="contain"
               />

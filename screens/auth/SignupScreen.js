@@ -21,6 +21,7 @@ import { useTheme } from '../../lib/ThemeContext';
 const GOLD = '#D4AF37';
 const OCEAN_DEEP = '#001B2E';
 const CARD_BG = '#003550';
+const CARD_ALT_BG = '#12324E';
 const SLATE_300 = '#cbd5e1';
 const SLATE_100 = '#f1f5f9';
 
@@ -29,6 +30,7 @@ const LIGHT_BG = '#f5f5f5';
 const LIGHT_CARD = '#ffffff';
 const LIGHT_TEXT = '#1a1a1a';
 const LIGHT_TEXT_SECONDARY = '#666666';
+const LIGHT_DROPDOWN_BG = '#f9f9f9';
 const PICKER_OPTION_COLOR = Platform.OS === 'android' ? OCEAN_DEEP : SLATE_100;
 const PICKER_PLACEHOLDER_COLOR = Platform.OS === 'android' ? '#64748b' : SLATE_300;
 
@@ -249,23 +251,23 @@ export default function SignupScreen({ navigation }) {
 
           <View style={styles.inputGroup}>
             <Text style={[styles.label, { color: textColor }]}>School</Text>
-            <View style={[styles.pickerWrapper, { backgroundColor: darkMode ? CARD_ALT_BG : '#f9f9f9', borderColor: darkMode ? 'rgba(212, 175, 55, 0.2)' : 'rgba(212, 175, 55, 0.15)' }]}>
+            <View style={[styles.pickerWrapper, { backgroundColor: LIGHT_DROPDOWN_BG, borderColor: 'rgba(212, 175, 55, 0.15)' }]}>
               <MaterialCommunityIcons name="school-outline" size={20} color={GOLD} style={styles.pickerIconLeft} />
               <Picker
                 selectedValue={school}
                 onValueChange={setSchool}
-                style={[styles.picker, { color: textColor, backgroundColor: darkMode ? CARD_ALT_BG : '#f9f9f9' }]}
+                style={[styles.picker, { color: LIGHT_TEXT, backgroundColor: LIGHT_DROPDOWN_BG }]}
                 dropdownIconColor={GOLD}
                 mode="dropdown"
-                itemStyle={[styles.pickerItem, { color: darkMode ? SLATE_100 : LIGHT_TEXT, backgroundColor: darkMode ? CARD_ALT_BG : '#f9f9f9' }]}
+                itemStyle={[styles.pickerItem, { color: LIGHT_TEXT, backgroundColor: LIGHT_DROPDOWN_BG }]}
               >
                 <Picker.Item
                   label={loadingSchools ? 'Loading schools...' : schoolOptions.length ? 'Select School' : 'No schools available'}
                   value=""
-                  color={darkMode ? SLATE_300 : '#000000'}
+                  color={LIGHT_TEXT_SECONDARY}
                 />
                 {schoolOptions.map((schoolName) => (
-                  <Picker.Item key={schoolName} label={schoolName} value={schoolName} color={darkMode ? SLATE_100 : '#000000'} />
+                  <Picker.Item key={schoolName} label={schoolName} value={schoolName} color={LIGHT_TEXT} />
                 ))}
               </Picker>
             </View>
@@ -276,21 +278,21 @@ export default function SignupScreen({ navigation }) {
 
           <View style={styles.inputGroup}>
             <Text style={[styles.label, { color: textColor }]}>Year Level</Text>
-            <View style={[styles.pickerWrapper, { backgroundColor: darkMode ? CARD_ALT_BG : '#f9f9f9', borderColor: darkMode ? 'rgba(212, 175, 55, 0.2)' : 'rgba(212, 175, 55, 0.15)' }]}>
+            <View style={[styles.pickerWrapper, { backgroundColor: LIGHT_DROPDOWN_BG, borderColor: 'rgba(212, 175, 55, 0.15)' }]}>
               <MaterialCommunityIcons name="clipboard-outline" size={20} color={GOLD} style={styles.pickerIconLeft} />
               <Picker
                 selectedValue={yearLevel}
                 onValueChange={setYearLevel}
-                style={[styles.picker, { color: textColor, backgroundColor: darkMode ? CARD_ALT_BG : '#f9f9f9' }]}
+                style={[styles.picker, { color: LIGHT_TEXT, backgroundColor: LIGHT_DROPDOWN_BG }]}
                 dropdownIconColor={GOLD}
                 mode="dropdown"
-                itemStyle={[styles.pickerItem, { color: darkMode ? SLATE_100 : LIGHT_TEXT, backgroundColor: darkMode ? CARD_ALT_BG : '#f9f9f9' }]}
+                itemStyle={[styles.pickerItem, { color: LIGHT_TEXT, backgroundColor: LIGHT_DROPDOWN_BG }]}
               >
-                <Picker.Item label="Select Year Level" value="" color={darkMode ? SLATE_300 : '#000000'} />
-                <Picker.Item label="1st Year" value="1st Year" color={darkMode ? SLATE_100 : '#000000'} />
-                <Picker.Item label="2nd Year" value="2nd Year" color={darkMode ? SLATE_100 : '#000000'} />
-                <Picker.Item label="3rd Year" value="3rd Year" color={darkMode ? SLATE_100 : '#000000'} />
-                <Picker.Item label="4th Year" value="4th Year" color={darkMode ? SLATE_100 : '#000000'} />
+                <Picker.Item label="Select Year Level" value="" color={LIGHT_TEXT_SECONDARY} />
+                <Picker.Item label="1st Year" value="1st Year" color={LIGHT_TEXT} />
+                <Picker.Item label="2nd Year" value="2nd Year" color={LIGHT_TEXT} />
+                <Picker.Item label="3rd Year" value="3rd Year" color={LIGHT_TEXT} />
+                <Picker.Item label="4th Year" value="4th Year" color={LIGHT_TEXT} />
               </Picker>
             </View>
             <Text style={[styles.helperText, { color: secondaryTextColor }]}>Scroll to select your year level</Text>
@@ -531,13 +533,13 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: 28,
     height: 50,
-    color: SLATE_100,
+    color: LIGHT_TEXT,
   },
   pickerItem: {
-    color: SLATE_100,
+    color: LIGHT_TEXT,
     fontSize: 14,
     height: 50,
-    backgroundColor: OCEAN_DEEP,
+    backgroundColor: LIGHT_DROPDOWN_BG,
   },
   helperText: {
     fontSize: 11,

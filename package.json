@@ -11,6 +11,8 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
+    "build:dev": "eas build --platform android --profile development --clear-cache",
+    "build:dev:start": "eas build --platform android --profile development --clear-cache; npm start",
     "create:admin": "node ./scripts/createAdmin.js",
     "delete:user": "node ./scripts/deleteUser.js",
     "delete:process": "node ./scripts/processDeletionQueue.js",
